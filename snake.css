@@ -1,0 +1,76 @@
+html{
+    font-family: 'Russo One', sans-serif;
+}
+#mainPanel{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-content: center;
+    flex-wrap: wrap;
+}
+#board{
+    border: 10px solid black;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+#panel{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-content: center;
+    margin-top: 1rem;
+}
+
+#header{
+    font-size: 3rem;
+    text-align: center;
+}
+
+#scorePanel{
+    font-size: 2rem;
+    height: fit-content;
+    z-index: 1;
+}
+
+.pixel {
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+.snake{
+    background-color: green;
+}
+
+.apple{
+    background-color: red;
+}
+
+.backgroundPixel:nth-of-type(2n) {
+    background-color: #b5e48c;
+}
+
+.backgroundPixel:nth-of-type(2n+1) {
+    background-color: #99d98c;
+}
+
+.button{
+    font-family: 'Russo One', sans-serif;
+    font-size: 2rem;
+    border: 1px solid #168aad;
+    border-radius: 0.5rem;
+    background-color: #1a759f;
+    color: white;
+    box-shadow: 0 4px 0 #1e6091;
+    padding: 1rem;
+    margin: 0;
+    height: fit-content;
+}
+
+.button:hover {
+    border: 1px solid #1a759f;
+    background-color: #1e6091;
+    color: white;
+    box-shadow: 0 4px 0 #184e77;
+    cursor: pointer;
+}
