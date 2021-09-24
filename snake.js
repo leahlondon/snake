@@ -1,7 +1,7 @@
 // constants and vars
 const actions = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'];
-const events = { add: 'add', move: 'move' };
-const status = { collision: 'collision', ok: 'ok' };
+const events = { add: 'add', move: 'move', collision: 'collision' };
+const status = { end: 'end', ok: 'ok' };
 const classes = { pixel: 'pixel', backgroundPixel: 'backgroundPixel', snake: 'snake', apple: 'apple' }
 const timeTik = 200;
 const pixelSize = 25;
@@ -72,17 +72,17 @@ class Board {
     }
 
     update(action) {
-        let e;
+        this.snake.moveHead(action);
+        if (this.checkCollision()) {
+            return { 'event': events.collision, 'add': null, 'del': null }
+        }
         if (this.checkApple()) {
-            this.snake.add(action);
             this.score += eventScores.apple;
-            e = events.add;
+            return { 'event': events.add, 'add': this.snake.getHead(), 'del': null };
         }
-        else {
-            this.snake.move(action);
-            e = events.move;
-        }
-        return { 'event': e, 'add': this.snake.getHead(), 'del': this.snake.lastTail };
+
+        this.snake.removeTail();
+        return { 'event': events.move, 'add': this.snake.getHead(), 'del': this.snake.lastTail };
     }
 
     checkApple() {
@@ -125,12 +125,11 @@ class Snake {
         return this.place[0];
     }
 
-    move(action) {
-        this.add(action);
+    removeTail() {
         this.lastTail = this.place.pop();
     }
 
-    add(action) {
+    moveHead(action) {
         this.place.unshift(this.getHead().nextLoc(action));
     }
 }
@@ -145,8 +144,8 @@ class Display {
 
     draw() {
         this.buildBoard();
-        this.toggleBoardObj(this.board.snake.getHead(), classes.snake);
-        this.toggleBoardObj(this.board.apple, classes.apple);
+        this.toggleClass(this.board.snake.getHead(), classes.snake);
+        this.toggleClass(this.board.apple, classes.apple);
         this.buildNewGameButton();
     }
 
@@ -175,31 +174,26 @@ class Display {
         });
     }
 
-    toggleBoardObj(obj, cls) {
-        this.toggleClass(obj, classes.backgroundPixel);
-        this.toggleClass(obj, cls);
-    }
-
     toggleClass(location, cls) {
         this.pixels[location.y][location.x].classList.toggle(cls);
     }
 
     update() {
         let { event, add, del } = this.board.update(this.action);
-
-        if (this.board.checkCollision()) {
-            return status.collision;
+        if (event === events.collision) {
+            return status.end;
         }
 
-        if (event === 'add') {
-            this.toggleBoardObj(add, classes.snake);
+        if (event === events.add) {
+            this.toggleClass(this.board.lastApple, classes.apple);
+            this.toggleClass(add, classes.snake);
             scoreDisplay.innerText = this.board.score;
-            this.toggleBoardObj(this.board.lastApple, classes.apple);
-            this.toggleBoardObj(this.board.apple, classes.apple);
+            this.toggleClass(this.board.apple, classes.apple);
         }
+
         else {
-            this.toggleBoardObj(add, classes.snake);
-            this.toggleBoardObj(del, classes.snake);
+            this.toggleClass(add, classes.snake);
+            this.toggleClass(del, classes.snake);
         }
         return status.ok;
     }
@@ -214,7 +208,7 @@ display.draw();
 // main loop
 const id = setInterval(() => {
     let stat = display.update();
-    if (stat === status.collision) {
+    if (stat === status.end) {
         display.gameOver();
         clearInterval(id);
     }

@@ -38,13 +38,6 @@ html{
     padding: 0;
     border: none;
 }
-.snake{
-    background-color: green;
-}
-
-.apple{
-    background-color: red;
-}
 
 .backgroundPixel:nth-of-type(2n) {
     background-color: #b5e48c;
@@ -52,6 +45,14 @@ html{
 
 .backgroundPixel:nth-of-type(2n+1) {
     background-color: #99d98c;
+}
+
+.backgroundPixel.snake{
+    background-color: green;
+}
+
+.backgroundPixel.apple{
+    background-color: red;
 }
 
 .button{
