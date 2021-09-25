@@ -140,32 +140,24 @@ class Snake {
     }
 }
 
-class Display {
+class Game {
     constructor(width = 50, height = 50) {
         this.action = 'ArrowUp';
         this.intervalId = null;
-        this.board = new Board(width, height);
-        this.pixels = [];
-        this.scoreDisplay = document.querySelector('#scoreDisplay');
-        this.gameHeader = document.querySelector('#header');
-        this.boardDisplay = document.querySelector('#board');
-        this.newGameButton = document.querySelector('#newGame');
-        this.saveResultsButton = document.querySelector('#saveResults');
+        this.display = new Display(new Board(width, height), this.newGame.bind(this));
     }
 
     initiate() {
-        this.buildBoard();
-        this.buildNewGameButton();
-        this.toggleObjs();
+        this.display.initiate();
         this.startTick();
         this.getAction();
     }
 
     startTick() {
         this.intervalId = setInterval(() => {
-            let stat = this.update();
+            let stat = this.display.update(this.action);
             if (stat === status.end) {
-                this.gameOver();
+                this.endTick();
             }
         }, timeTick);
     }
@@ -176,6 +168,36 @@ class Display {
                 this.action = e.key;
             }
         });
+    }
+
+    endTick() {
+        clearInterval(this.intervalId);
+    }
+
+    newGame() {
+        this.endTick();
+        this.action = 'ArrowUp';
+        this.display.reset();
+        this.startTick();
+    }
+}
+
+class Display {
+    constructor(board, newGame) {
+        this.board = board;
+        this.pixels = [];
+        this.scoreDisplay = document.querySelector('#scoreDisplay');
+        this.gameHeader = document.querySelector('#header');
+        this.boardDisplay = document.querySelector('#board');
+        this.newGameButton = document.querySelector('#newGame');
+        this.newGameFunction = newGame;
+        this.saveResultsButton = document.querySelector('#saveResults');
+    }
+
+    initiate() {
+        this.buildBoard();
+        this.buildNewGameButton();
+        this.toggleObjs();
     }
 
     toggleObjs() {
@@ -202,21 +224,7 @@ class Display {
     }
 
     buildNewGameButton() {
-        this.newGameButton.addEventListener('click', () => {
-            this.endTick();
-            // delete objs
-            this.toggleObjs();
-            // new board
-            this.action = 'ArrowUp';
-            this.board = new Board(this.board.width, this.board.height);
-            this.updateScoreDisplay();
-            this.updateGameHeader('Snake');
-            this.saveResultsButton.disabled = true;
-            // draw objs
-            this.toggleObjs();
-            // start game
-            this.startTick();
-        });
+        this.newGameButton.addEventListener('click', this.newGameFunction);
     }
 
     buildSaveResultsButton() {
@@ -231,12 +239,13 @@ class Display {
         this.scoreDisplay.innerText = this.board.score;
     }
 
-    update() {
-        let { event, toggle } = this.board.update(this.action);
+    update(action) {
+        let { event, toggle } = this.board.update(action);
 
         Object.keys(toggle).forEach((c) => toggle[c].forEach((e) => this.toggleClass(e, c)));
 
         if (event === events.collision) {
+            this.gameOver();
             return status.end;
         }
 
@@ -250,19 +259,23 @@ class Display {
         this.gameHeader.innerText = text;
     }
 
-    endTick() {
-        clearInterval(this.intervalId);
+    gameOver() {
+        this.updateGameHeader('Game Over');
         this.saveResultsButton.disabled = false;
     }
 
-    gameOver() {
-        this.updateGameHeader('Game Over');
-        this.endTick();
+    reset() {
+        this.toggleObjs();
+        this.board = new Board(this.board.width, this.board.height);
+        this.updateScoreDisplay();
+        this.updateGameHeader('Snake');
+        this.saveResultsButton.disabled = true;
+        this.toggleObjs();
     }
 }
 
 // main
-const game = new Display(25, 25);
+const game = new Game(25, 25);
 game.initiate();
 
 

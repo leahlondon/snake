@@ -14,12 +14,18 @@ html{
     flex-wrap: wrap;
 }
 
-#panel{
+#buttonPanel{
     display: flex;
     flex-direction: row;
     justify-content: space-between;
     align-content: center;
     margin-top: 1rem;
+}
+
+#bottomPanel{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
 }
 
 #header{
@@ -30,7 +36,6 @@ html{
 #scorePanel{
     font-size: 2rem;
     height: fit-content;
-    z-index: 1;
 }
 
 .pixel {
@@ -64,7 +69,7 @@ html{
     color: white;
     box-shadow: 0 4px 0 #1e6091;
     padding: 1rem;
-    margin: 0;
+    margin: 0 0 0 1rem;
     height: fit-content;
 }
 
