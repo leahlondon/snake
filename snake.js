@@ -267,7 +267,7 @@ class Display {
     gameOver() {
         this.updateGameHeader('Game Over');
         this.saveResultsButton.disabled = false;
-        window.localStorage.setItem('lastResult', this.board.score);
+        window.localStorage.setItem('lastScore', this.board.score);
     }
 
     reset() {

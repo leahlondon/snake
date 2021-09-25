@@ -41,6 +41,10 @@ html{
     flex-wrap: wrap;
 }
 
+#saveResults{
+    margin-left: 1rem;
+}
+
 .scorePanel{
     font-size: 2rem;
     height: fit-content;
@@ -83,7 +87,6 @@ html{
     color: white;
     box-shadow: 0 4px 0 #1e6091;
     padding: 1rem;
-    margin: 0 0 0 1rem;
     height: fit-content;
 }
 
@@ -107,10 +110,13 @@ html{
     font-family: 'Russo One', sans-serif;
     font-size: 1.5rem;
     width: 50%;
+    margin-bottom: 1rem;
 }
+
 .input:focus{
     outline: none;
 }
+
 .input:invalid {
     border: 2px solid red;
   }
@@ -118,6 +124,41 @@ html{
 .input:valid {
     border: 2px solid #1a759f;
   }
+
 #allResultsHeader{
     display: none;
+}
+
+table {
+    table-layout: fixed;
+    width: 100%;
+    border-collapse: collapse;
+    border: 2px solid #76c893;
+    text-align: center;
+    font-size: 1rem; 
+    box-shadow: 0 4px 0 #52b69a;
+}
+  
+#playerNameTh {
+    width: 30%;
+}
+  
+#scoreTh {
+    width: 20%;
+}
+  
+#timeTh {
+    width: 50%;
+  }
+  
+th, td {
+    padding: 1rem;
+}
+
+tr:nth-of-type(2n){
+      background-color: #b5e48c;
+}
+
+tr:nth-of-type(2n+1){
+    background-color: #99d98c;
 }
