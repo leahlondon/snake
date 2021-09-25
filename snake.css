@@ -1,7 +1,7 @@
 html{
     font-family: 'Russo One', sans-serif;
 }
-#mainPanel{
+.mainPanel{
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -14,7 +14,7 @@ html{
     flex-wrap: wrap;
 }
 
-#buttonPanel{
+.buttonPanel{
     display: flex;
     flex-direction: row;
     justify-content: space-between;
@@ -28,12 +28,12 @@ html{
     justify-content: space-between;
 }
 
-#header{
+.mainHeader{
     font-size: 3rem;
     text-align: center;
 }
 
-#scorePanel{
+h2{
     font-size: 2rem;
     height: fit-content;
 }
@@ -63,6 +63,8 @@ html{
 .button{
     font-family: 'Russo One', sans-serif;
     font-size: 2rem;
+    text-decoration: none;
+    text-align: center;
     border: 1px solid #168aad;
     border-radius: 0.5rem;
     background-color: #1a759f;
@@ -79,4 +81,12 @@ html{
     color: white;
     box-shadow: 0 4px 0 #184e77;
     cursor: pointer;
+}
+
+.button:disabled {
+    border: 1px solid #6c757d;
+    background-color: #adb5bd;
+    color: white;
+    box-shadow: 0 4px 0 #495057;
+    cursor: unset;
 }

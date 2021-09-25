@@ -197,6 +197,7 @@ class Display {
     initiate() {
         this.buildBoard();
         this.buildNewGameButton();
+        this.buildSaveResultsButton();
         this.toggleObjs();
     }
 
@@ -228,7 +229,11 @@ class Display {
     }
 
     buildSaveResultsButton() {
-
+        this.saveResultsButton.disabled = true;
+        this.saveResultsButton.addEventListener('click', () => {
+            location.href = "resultsPage.html";
+            return false;
+        })
     }
 
     toggleClass(location, cls) {
@@ -262,6 +267,7 @@ class Display {
     gameOver() {
         this.updateGameHeader('Game Over');
         this.saveResultsButton.disabled = false;
+        window.localStorage.setItem('lastResult', this.board.score);
     }
 
     reset() {
