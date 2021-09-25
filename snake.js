@@ -73,15 +73,14 @@ class Board {
 
     update(action) {
         this.snake.moveHead(action);
-        if (this.checkCollision()) {
-            return { 'event': events.collision, 'add': null, 'del': null }
-        }
         if (this.checkApple()) {
             this.score += eventScores.apple;
             return { 'event': events.add, 'add': this.snake.getHead(), 'del': null };
         }
-
         this.snake.removeTail();
+        if (this.checkCollision()) {
+            return { 'event': events.collision, 'add': null, 'del': null }
+        }
         return { 'event': events.move, 'add': this.snake.getHead(), 'del': this.snake.lastTail };
     }
 
@@ -95,8 +94,8 @@ class Board {
     }
 
     checkCollision() {
-        if (this.snake.getHead().x < 0 || this.snake.getHead().x > this.width ||
-            this.snake.getHead().y < 0 || this.snake.getHead().y > this.height) {
+        if (this.snake.getHead().x < 0 || this.snake.getHead().x >= this.width ||
+            this.snake.getHead().y < 0 || this.snake.getHead().y >= this.height) {
             return true;
         }
         if (this.snake.getHead().isInList(this.snake.getPlaceNoHead())) {
@@ -170,7 +169,8 @@ class Display {
 
     buildNewGameButton() {
         document.querySelector('#newGame').addEventListener('click', () => {
-            location.reload();
+            let del = [...this.board.snake.getPlaceNoHead(), this.board.snake.lastTail];
+            del.forEach((e) => { this.toggleClass(e, classes.snake); });
         });
     }
 
