@@ -3,7 +3,7 @@ const actions = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'];
 const events = { add: 'add', move: 'move', collision: 'collision' };
 const status = { end: 'end', ok: 'ok' };
 const classes = { pixel: 'pixel', backgroundPixel: 'backgroundPixel', snake: 'snake', apple: 'apple' }
-const timeTik = 200;
+const timeTick = 200;
 const pixelSize = 25;
 const eventScores = { apple: 1 };
 
@@ -75,15 +75,15 @@ class Board {
         this.snake.moveHead(action);
         if (this.checkApple()) {
             this.score += eventScores.apple;
-            return { 'event': events.add, 'toggleSnake': [this.snake.getHead()], 'toggleApple': [this.apple, this.lastApple] };
+            return { 'event': events.add, 'toggle': { [classes.snake]: [this.snake.getHead()], [classes.apple]: [this.apple, this.lastApple] } };
         }
         else if (this.checkCollision()) {
             this.snake.removeHead();
-            return { 'event': events.collision, 'toggleSnake': [], 'toggleApple': [] }
+            return { 'event': events.collision, 'toggle': {} };
         }
         else {
             this.snake.removeTail();
-            return { 'event': events.move, 'toggleSnake': [this.snake.getHead(), this.snake.lastTail], 'toggleApple': [] };
+            return { 'event': events.move, 'toggle': { [classes.snake]: [this.snake.getHead(), this.snake.lastTail] } };
         }
     }
 
@@ -150,24 +150,24 @@ class Display {
         this.gameHeader = document.querySelector('#header');
         this.boardDisplay = document.querySelector('#board');
         this.newGameButton = document.querySelector('#newGame');
+        this.saveResultsButton = document.querySelector('#saveResults');
     }
 
     initiate() {
         this.buildBoard();
         this.buildNewGameButton();
         this.toggleObjs();
-        this.tik();
+        this.startTick();
         this.getAction();
     }
 
-    tik() {
+    startTick() {
         this.intervalId = setInterval(() => {
             let stat = this.update();
             if (stat === status.end) {
-                this.updateGameHeader('Game Over');
-                clearInterval(this.intervalId);
+                this.gameOver();
             }
-        }, timeTik);
+        }, timeTick);
     }
 
     getAction() {
@@ -203,6 +203,7 @@ class Display {
 
     buildNewGameButton() {
         this.newGameButton.addEventListener('click', () => {
+            this.endTick();
             // delete objs
             this.toggleObjs();
             // new board
@@ -210,11 +211,16 @@ class Display {
             this.board = new Board(this.board.width, this.board.height);
             this.updateScoreDisplay();
             this.updateGameHeader('Snake');
+            this.saveResultsButton.disabled = true;
             // draw objs
             this.toggleObjs();
             // start game
-            this.tik();
+            this.startTick();
         });
+    }
+
+    buildSaveResultsButton() {
+
     }
 
     toggleClass(location, cls) {
@@ -226,10 +232,9 @@ class Display {
     }
 
     update() {
-        let { event, toggleSnake, toggleApple } = this.board.update(this.action);
+        let { event, toggle } = this.board.update(this.action);
 
-        toggleSnake.forEach((e) => this.toggleClass(e, classes.snake));
-        toggleApple.forEach((e) => this.toggleClass(e, classes.apple));
+        Object.keys(toggle).forEach((c) => toggle[c].forEach((e) => this.toggleClass(e, c)));
 
         if (event === events.collision) {
             return status.end;
@@ -243,6 +248,16 @@ class Display {
 
     updateGameHeader(text) {
         this.gameHeader.innerText = text;
+    }
+
+    endTick() {
+        clearInterval(this.intervalId);
+        this.saveResultsButton.disabled = false;
+    }
+
+    gameOver() {
+        this.updateGameHeader('Game Over');
+        this.endTick();
     }
 }
 
