@@ -15,15 +15,20 @@
 <body>
     <main class="mainPanel">
         <h1 class="mainHeader">Results</h1>
-        <h2 class="resultPanel">Your result: <span id="resultDisplay">0</span></h2>
-        <form action=""></form>
-        <label for="playerName">Enter your name: </label>
-        <input type="text" name="playerName" id="playerName">
-        </form>
-        <nav class="buttonPanel">
-            <button class="button" id="saveResult">Save</button>
-            <a href="snake.html" class="button" id="return">Return</a>
-        </nav>
+        <section class="resultsPanel">
+            <h2 class="scorePanel">Your result: <span id="resultDisplay" class="scoreDisplay">0</span></h2>
+            <label for="playerName" class="input">Enter your name: </label>
+            <input class="input" type="text" name="playerName" id="playerName" placeholder="E.G: severus snape"
+                required>
+            <nav class="buttonPanel">
+                <button class="button" id="saveResult">Save</button>
+                <a href="snake.html" class="button" id="return">Return</a>
+            </nav>
+            <h2 class="scorePanel" id="allResultsHeader">All Results</h2>
+            <table id="resultsTable">
+            </table>
+
+        </section>
     </main>
     <script src="resultsPage.js"></script>
 

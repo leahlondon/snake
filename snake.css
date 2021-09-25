@@ -8,10 +8,17 @@ html{
     align-content: center;
     flex-wrap: wrap;
 }
-#board{
-    border: 10px solid black;
+
+.resultsPanel{
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
+    align-content: flex-start;
+    flex-wrap: nowrap;
+    width: 50%;
+}
+.mainHeader{
+    font-size: 3rem;
+    text-align: center;
 }
 
 .buttonPanel{
@@ -28,14 +35,19 @@ html{
     justify-content: space-between;
 }
 
-.mainHeader{
-    font-size: 3rem;
-    text-align: center;
+#board{
+    border: 10px solid black;
+    display: flex;
+    flex-wrap: wrap;
 }
 
-h2{
+.scorePanel{
     font-size: 2rem;
     height: fit-content;
+}
+
+.scoreDisplay{
+    color: #1a759f;
 }
 
 .pixel {
@@ -89,4 +101,23 @@ h2{
     color: white;
     box-shadow: 0 4px 0 #495057;
     cursor: unset;
+}
+.input{
+    border-radius: 0.5rem;
+    font-family: 'Russo One', sans-serif;
+    font-size: 1.5rem;
+    width: 50%;
+}
+.input:focus{
+    outline: none;
+}
+.input:invalid {
+    border: 2px solid red;
+  }
+  
+.input:valid {
+    border: 2px solid #1a759f;
+  }
+#allResultsHeader{
+    display: none;
 }
