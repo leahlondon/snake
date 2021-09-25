@@ -139,13 +139,28 @@ class Display {
         this.board = new Board(width, height);
         this.pixels = [];
         this.scoreDisplay = document.querySelector('#scoreDisplay');
+        this.gameHeader = document.querySelector('#header');
+        this.intervalId = null;
+    }
+    initiate() {
+        this.buildBoard();
+        this.buildNewGameButton();
+        this.draw();
+    }
+
+    startGame() {
+        this.intervalId = setInterval(() => {
+            let stat = this.update();
+            if (stat === status.end) {
+                this.updateGameHeader('Game Over');
+                clearInterval(this.intervalId);
+            }
+        }, timeTik);
     }
 
     draw() {
-        this.buildBoard();
         this.toggleClass(this.board.snake.getHead(), classes.snake);
         this.toggleClass(this.board.apple, classes.apple);
-        this.buildNewGameButton();
     }
 
     buildBoard() {
@@ -169,13 +184,28 @@ class Display {
 
     buildNewGameButton() {
         document.querySelector('#newGame').addEventListener('click', () => {
+            // delete snake
             let del = [...this.board.snake.getPlaceNoHead(), this.board.snake.lastTail];
             del.forEach((e) => { this.toggleClass(e, classes.snake); });
+            // delete apple
+            this.toggleClass(this.board.apple, classes.apple);
+            // new board
+            this.board = new Board(this.board.width, this.board.height);
+            this.updateScoreDisplay();
+            this.updateGameHeader('Snake');
+            // draw
+            this.draw();
+            // start game
+            this.startGame();
         });
     }
 
     toggleClass(location, cls) {
         this.pixels[location.y][location.x].classList.toggle(cls);
+    }
+
+    updateScoreDisplay() {
+        this.scoreDisplay.innerText = this.board.score;
     }
 
     update() {
@@ -187,7 +217,7 @@ class Display {
         if (event === events.add) {
             this.toggleClass(this.board.lastApple, classes.apple);
             this.toggleClass(add, classes.snake);
-            scoreDisplay.innerText = this.board.score;
+            this.updateScoreDisplay();
             this.toggleClass(this.board.apple, classes.apple);
         }
 
@@ -198,21 +228,13 @@ class Display {
         return status.ok;
     }
 
-    gameOver() {
-        document.querySelector('#header').innerText = 'Game Over';
+    updateGameHeader(text) {
+        this.gameHeader.innerText = text;
     }
 }
 const display = new Display(25, 25);
-display.draw();
-
-// main loop
-const id = setInterval(() => {
-    let stat = display.update();
-    if (stat === status.end) {
-        display.gameOver();
-        clearInterval(id);
-    }
-}, timeTik);
+display.initiate();
+display.startGame();
 
 window.addEventListener('keydown', (e) => {
     if (actions.includes(e.key)) {
