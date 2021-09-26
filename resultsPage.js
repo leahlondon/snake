@@ -1,34 +1,36 @@
+const classes = { 'currentResult': 'currentResult' };
+
 class Results {
     constructor() {
         this.data = this.parseResults();
-        this.currentResult = this.getCurrentResult();
+        this.currentScore = this.getCurrentScore();
+        this.currentResult = null;
         this.headers = { 'playerNameTh': 'Player Name', 'scoreTh': 'Score', 'timeTh': 'Time' };
     }
 
     parseResults() {
         let res = JSON.parse(window.localStorage.getItem('scores'));
-        if (!res)
-            return [];
-        return res;
+        return res ? res : [];
     }
 
-    getCurrentResult() {
+    saveResults() {
+        window.localStorage.setItem('scores', JSON.stringify(this.data));
+    }
+
+    getCurrentScore() {
         return window.localStorage.getItem('lastScore');
     }
 
     saveCurrentResult(playerName) {
         let date = new Date();
-        this.data.push({ 'playerName': playerName, 'score': this.currentResult, 'time': date.toLocaleString('en-GB') })
+        this.currentResult = { 'playerName': playerName, 'score': this.currentScore, 'time': date.toLocaleString('en-GB') };
+        this.data.push(this.currentResult);
         this.sortResultsByScore();
-        window.localStorage.setItem('scores', JSON.stringify(this.data));
+        this.saveResults();
     }
 
     sortResultsByScore() {
         this.data.sort((a, b) => parseInt(b.score) - parseInt(a.score));
-    }
-
-    getRecentResult() {
-
     }
 }
 
@@ -54,7 +56,7 @@ class Display {
         });
     }
     setResultDisplay() {
-        this.resultDisplay.innerText = this.results.currentResult;
+        this.resultDisplay.innerText = this.results.currentScore;
     }
 
     buildResultsTable() {
@@ -76,6 +78,9 @@ class Display {
                 let td = document.createElement('td');
                 td.innerText = line[k];
                 tr.appendChild(td);
+            }
+            if (line == this.results.currentResult) {
+                tr.classList.add(classes.currentResult);
             }
             this.resultsTable.appendChild(tr);
         }
