@@ -75,6 +75,7 @@ html{
 .mainHeader{
     font-size: 3rem;
     text-align: center;
+    margin: 1rem;
 }
 
 .buttonPanel{
@@ -83,12 +84,6 @@ html{
     justify-content: space-between;
     align-content: center;
     margin-top: 1rem;
-}
-
-#bottomPanel{
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
 }
 
 #board{
@@ -104,10 +99,21 @@ html{
 .scorePanel{
     font-size: 2rem;
     height: fit-content;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
 }
 
-.scoreDisplay{
-    color: #1a759f;
+.playerScore{
+    margin: 0.5rem;
+}
+
+.scoreDisplay1{
+    color: green;
+}
+
+.scoreDisplay2{
+    color:purple;
 }
 
 .pixel {
@@ -124,8 +130,12 @@ html{
     background-color: #99d98c;
 }
 
-.backgroundPixel.snake{
+.backgroundPixel.snake1{
     background-color: green;
+}
+
+.backgroundPixel.snake2{
+    background-color: purple;
 }
 
 .backgroundPixel.apple{

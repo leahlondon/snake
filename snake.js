@@ -1,11 +1,101 @@
 // constants and vars
-const actions = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'];
-const events = { add: 'add', move: 'move', collision: 'collision' };
+const actions = {
+    1: { 'ArrowLeft': 'left', 'ArrowRight': 'right', 'ArrowUp': 'up', 'ArrowDown': 'down' },
+    2: { 'a': 'left', 'd': 'right', 'w': 'up', 's': 'down' }
+};
+const events = {
+    add: { 1: 'add1', 2: 'add2' }, move: { 1: 'move1', 2: 'move2' }, collsion: {
+        1: 'collision1', 2: 'collision2'
+    }
+};
 const status = { end: 'end', ok: 'ok' };
-const classes = { pixel: 'pixel', backgroundPixel: 'backgroundPixel', snake: 'snake', apple: 'apple' }
-const timeTick = 200;
+const classes = { pixel: 'pixel', backgroundPixel: 'backgroundPixel', snake1: 'snake1', snake2: 'snake2', apple: 'apple' }
 const pixelSize = 25;
-const eventScores = { apple: 1 };
+
+class Player {
+    constructor(snake, disabled = false) {
+        this.disabled = disabled;
+        this.score = 0;
+        this.snake = snake;
+        this.action = 'up';
+        this.disabled = disabled;
+
+    }
+
+    disable() {
+        this.disabled = true;
+    }
+
+    checkIfGotFood(foods) {
+        if (this.disabled) {
+            return null;
+        }
+        for (let food of foods.foodList) {
+            if (this.snake.getHead().equal(food.location)) {
+                this.score += food.foodType.score;
+                return food;
+            }
+        }
+        return null;
+    }
+
+    checkIfSnakeHitWall(width, height) {
+        return (this.snake.getHead().x < 0 || this.snake.getHead().x >= width ||
+            this.snake.getHead().y < 0 || this.snake.getHead().y >= height);
+    }
+
+    checkIfSnakeHitOtherPlayer(otherPlayer) {
+        return (!otherPlayer.disabled) && (this.snake.getHead().isInList([...otherPlayer.snake.place]));
+    }
+
+    checkIfSnakeHitItself() {
+        return this.snake.getHead().isInList([...this.snake.getPlaceNoHead()]);
+    }
+
+    play() {
+        this.snake.moveHead(this.action);
+    }
+}
+
+class Foods {
+    constructor() {
+        this.foodList = [];
+        this.options = [{ 'class': 'apple', 'score': 1 }]
+    }
+
+    createNewFood(foodLoc) {
+        let rand = Math.floor(Math.random() * this.options.length);
+        let newFood = { 'foodType': this.options[rand], 'location': foodLoc };
+        this.foodList.push(newFood);
+        return newFood;
+    }
+
+    getFoodCurrentLocations() {
+        return this.foodList.map((e) => e.location);
+    }
+
+    getFoodsByClass() {
+        let res = {};
+        for (let f of this.foodList) {
+            if (!res.hasOwnProperty(f.foodType.class)) {
+                res[f.foodType.class] = [f.location];
+            }
+            else {
+                res[f.foodType.class].push(f.location);
+            }
+        }
+        return res;
+    }
+
+    eat(food) {
+        for (let i = 0; i < this.foodList.length; i++) {
+            if (this.foodList[i].location.equal(food.location)) {
+                this.foodList.splice(i, 1);
+                return
+            }
+        }
+    }
+}
 
 class Location {
     constructor(x, y) {
@@ -29,16 +119,16 @@ class Location {
         let x = this.x;
         let y = this.y;
         switch (action) {
-            case ('ArrowLeft'):
+            case ('left'):
                 x--;
                 break;
-            case ('ArrowRight'):
+            case ('right'):
                 x++;
                 break;
-            case ('ArrowUp'):
+            case ('up'):
                 y--;
                 break;
-            case ('ArrowDown'):
+            case ('down'):
                 y++;
                 break;
         }
@@ -47,72 +137,131 @@ class Location {
 }
 
 class Board {
-    constructor(width = 50, height = 50) {
+    constructor(width = 50, height = 50, multiplayer = false) {
         this.width = width;
         this.height = height;
-        let x = Math.floor(Math.random() * width * 0.8 + width * 0.1);
-        let y = Math.floor(Math.random() * height * 0.8 + height * 0.1);
-        this.snake = new Snake(x, y);
-        this.apple = this.createApple();
-        this.lastApple = null;
-        this.score = 0;
+        // players
+        this.players = {};
+        this.disabledPlayers = {};
+        this.players[1] = new Player(new Snake(this.createRandomLocation(0.1, 0.8), classes.snake1), false);
+        this.players[2] = new Player(new Snake(this.createRandomLocation(0.1, 0.8), classes.snake2), !multiplayer);
+        this.updateEnabledPlayers();
+        this.multiplayer = multiplayer;
+        // foods
+        this.foods = new Foods();
+        this.createFoodsOnBoard(2);
     }
 
-    createApple() {
+    createFoodsOnBoard(n) {
+        for (let i = 0; i < n; i++) {
+            this.foods.createNewFood(this.createRandomLocation());
+        }
+    }
+
+    updateEnabledPlayers() {
+        let enabled = {};
+        for (let [n, player] of Object.entries(this.players)) {
+            if (!player.disabled) {
+                enabled[n] = player;
+            }
+            else {
+                this.disabledPlayers[n] = player;
+            }
+        }
+        this.players = enabled;
+    }
+
+    getUnavailableLocations() {
+        let res = [];
+        for (let player of Object.values(this.players)) {
+            if (player) {
+                res.push(...player.snake.place);
+            }
+        }
+        if (this.foods) {
+            res.push(...this.foods.getFoodCurrentLocations());
+        }
+        return res;
+    }
+
+    createRandomLocation(from = 0, over = 1) {
+        let unavailableLocs = this.getUnavailableLocations();
         let location;
         do {
-            let x = Math.floor(Math.random() * this.width);
-            let y = Math.floor(Math.random() * this.height);
+            let x = Math.floor(Math.random() * this.width * over + this.width * from);
+            let y = Math.floor(Math.random() * this.height * over + this.height * from);
             location = new Location(x, y);
         }
 
-        while (location.isInList(this.snake.place));
+        while (location.isInList(unavailableLocs));
 
         return location;
+
     }
 
-    update(action) {
-        this.snake.moveHead(action);
-        if (this.checkApple()) {
-            this.score += eventScores.apple;
-            return { 'event': events.add, 'toggle': { [classes.snake]: [this.snake.getHead()], [classes.apple]: [this.apple, this.lastApple] } };
-        }
-        else if (this.checkCollision()) {
-            this.snake.removeHead();
-            return { 'event': events.collision, 'toggle': {} };
-        }
-        else {
-            this.snake.removeTail();
-            return { 'event': events.move, 'toggle': { [classes.snake]: [this.snake.getHead(), this.snake.lastTail] } };
-        }
-    }
+    update() {
+        let returnVal = { 'eventsList': [], 'toggle': {} };
 
-    checkApple() {
-        if (this.snake.getHead().equal(this.apple)) {
-            this.lastApple = this.apple;
-            this.apple = this.createApple();
-            return true;
+        for (let player of Object.values(this.players)) {
+            returnVal.toggle[player.snake.cssClass] = [];
+            player.play();
         }
-        return false;
+
+        let col = this.checkCollision();
+        for (let [n, player] of Object.entries(this.players)) {
+            if (col.includes(events.collsion[n])) {
+                player.snake.removeHead();
+                player.disable();
+                this.updateEnabledPlayers();
+                returnVal.eventsList.push(events.collsion[n]);
+            }
+        }
+
+        let changed = new Foods();
+        for (let [n, player] of Object.entries(this.players)) {
+            let food = player.checkIfGotFood(this.foods);
+            if (food) {
+                this.foods.eat(food);
+                let newFood = this.foods.createNewFood(this.createRandomLocation());
+                changed.foodList.push(food, newFood);
+                returnVal.eventsList.push(events.add[n]);
+                returnVal.toggle[player.snake.cssClass].push(player.snake.getHead());
+            }
+            else {
+                player.snake.removeTail();
+                returnVal.eventsList.push(events.move[n]);
+                returnVal.toggle[player.snake.cssClass].push(player.snake.getHead(), player.snake.lastTail);
+            }
+        }
+        returnVal.toggle = { ...returnVal.toggle, ...changed.getFoodsByClass() };
+        return returnVal;
     }
 
     checkCollision() {
-        if (this.snake.getHead().x < 0 || this.snake.getHead().x >= this.width ||
-            this.snake.getHead().y < 0 || this.snake.getHead().y >= this.height) {
-            return true;
+        let e = [];
+        for (let [n, player] of Object.entries(this.players)) {
+            let flag = false;
+            for (let [m, other] of Object.entries(this.players)) {
+                if (m === n) {
+                    flag = flag || player.checkIfSnakeHitWall(this.width, this.height) || player.checkIfSnakeHitItself();
+                }
+                else {
+                    flag = flag || player.checkIfSnakeHitOtherPlayer(other);
+                }
+            }
+            if (flag) {
+                e.push(events.collsion[n]);
+            }
         }
-        if (this.snake.getHead().isInList(this.snake.getPlaceNoHead())) {
-            return true;
-        }
-        return false;
+        return e;
     }
-
 }
 
 class Snake {
-    constructor(x, y) {
-        this.place = [new Location(x, y)];
+    constructor(headLoc, cssClass) {
+        this.place = [headLoc];
         this.lastTail = this.getTail();
+        this.cssClass = cssClass;
     }
 
     getPlaceNoHead() {
@@ -141,10 +290,11 @@ class Snake {
 }
 
 class Game {
-    constructor(width = 50, height = 50) {
-        this.action = 'ArrowUp';
+    constructor(width = 50, height = 50, multiplayer = false) {
         this.intervalId = null;
-        this.display = new Display(new Board(width, height), this.newGame.bind(this));
+        this.multiplayer = multiplayer;
+        this.display = new Display(new Board(width, height, multiplayer), this.newGame.bind(this));
+        this.timeTick = 150;
     }
 
     initiate() {
@@ -155,17 +305,19 @@ class Game {
 
     startTick() {
         this.intervalId = setInterval(() => {
-            let stat = this.display.update(this.action);
+            let stat = this.display.update();
             if (stat === status.end) {
                 this.endTick();
             }
-        }, timeTick);
+        }, this.timeTick);
     }
 
     getAction() {
         window.addEventListener('keydown', (e) => {
-            if (actions.includes(e.key)) {
-                this.action = e.key;
+            for (let [n, player] of Object.entries(this.display.board.players)) {
+                if (Object.keys(actions[n]).includes(e.key)) {
+                    player.action = actions[n][e.key];
+                }
             }
         });
     }
@@ -176,7 +328,6 @@ class Game {
 
     newGame() {
         this.endTick();
-        this.action = 'ArrowUp';
         this.display.reset();
         this.startTick();
     }
@@ -186,7 +337,7 @@ class Display {
     constructor(board, newGame) {
         this.board = board;
         this.pixels = [];
-        this.scoreDisplay = document.querySelector('#scoreDisplay');
+        this.scoreDisplay = { 1: document.querySelector('#scoreDisplay1'), 2: document.querySelector('#scoreDisplay2') };
         this.gameHeader = document.querySelector('#header');
         this.boardDisplay = document.querySelector('#board');
         this.newGameButton = document.querySelector('#newGame');
@@ -202,8 +353,10 @@ class Display {
     }
 
     toggleObjs() {
-        this.board.snake.place.forEach((e) => { this.toggleClass(e, classes.snake) });
-        this.toggleClass(this.board.apple, classes.apple);
+        for (let player of Object.values(this.board.players)) {
+            player.snake.place.forEach((e) => { this.toggleClass(e, player.snake.cssClass) });
+        }
+        this.board.foods.foodList.forEach((f) => { this.toggleClass(f.location, f.foodType.class) });
     }
 
     buildBoard() {
@@ -240,23 +393,35 @@ class Display {
         this.pixels[location.y][location.x].classList.toggle(cls);
     }
 
-    updateScoreDisplay() {
-        this.scoreDisplay.innerText = this.board.score;
+    toggleClassList(lst) {
+        Object.keys(lst).forEach((c) => lst[c].forEach((e) => this.toggleClass(e, c)));
     }
 
-    update(action) {
-        let { event, toggle } = this.board.update(action);
+    updateScoreDisplay(n) {
+        this.scoreDisplay[n].innerText = this.board.players[n].score;
+    }
 
-        Object.keys(toggle).forEach((c) => toggle[c].forEach((e) => this.toggleClass(e, c)));
+    update() {
+        let { eventsList, toggle } = this.board.update();
 
-        if (event === events.collision) {
+        this.toggleClassList(toggle);
+
+        if (this.board.players.length == 0) {
             this.gameOver();
             return status.end;
         }
-
-        if (event === events.add) {
-            this.updateScoreDisplay();
+        for (let [n, player] of Object.entries(this.board.players)) {
+            if (eventsList.includes(events.add[n])) {
+                this.updateScoreDisplay(n);
+            }
         }
+
+        for (let [n, player] of Object.entries(this.board.disabledPlayers)) {
+            if (eventsList.includes(events.collsion[n])) {
+                console.log("collision!");
+            }
+        }
+
         return status.ok;
     }
 
@@ -281,7 +446,7 @@ class Display {
 }
 
 // main
-const game = new Game(25, 25);
+const game = new Game(25, 25, true);
 game.initiate();
 
 

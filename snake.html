@@ -15,16 +15,15 @@
 <body>
     <main class="mainPanel">
         <h1 id="header" class="mainHeader">Snake</h1>
-        <section id='board'>
-
+        <section class="scorePanel">
+            <p class="playerScore">Player1: <span id="scoreDisplay1" class="scoreDisplay1">-</span></p>
+            <p class="playerScore">Player2: <span id="scoreDisplay2" class="scoreDisplay2">-</span></p>
         </section>
-        <section id="bottomPanel">
-            <h2 class="scorePanel">Score: <span id="scoreDisplay" class="scoreDisplay">0</span></h2>
-            <nav class="buttonPanel">
-                <button class="button" id="newGame">New Game</button>
-                <button class="button" id="saveResults">Save Results</button>
-            </nav>
-        </section>
+        <section id='board'></section>
+        <nav class="buttonPanel">
+            <button class="button" id="newGame">New Game</button>
+            <button class="button" id="saveResults">Save Results</button>
+        </nav>
     </main>
     <div class="area">
         <img src="snakeLogo.png" alt="" class="snakeLogo">
