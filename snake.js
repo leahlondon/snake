@@ -45,7 +45,7 @@ class Player {
     }
 
     checkIfSnakeHitOtherPlayer(otherPlayer) {
-        return (!otherPlayer.disabled) && (this.snake.getHead().isInList([...otherPlayer.snake.place]));
+        return (this.snake.getHead().isInList([...otherPlayer.snake.place]));
     }
 
     checkIfSnakeHitItself() {
@@ -171,6 +171,14 @@ class Board {
         this.players = enabled;
     }
 
+    getAllPlayers() {
+        let res = { ...this.players, ...this.disabledPlayers };
+        if (this.multiplayer) {
+            return res;
+        }
+        return { 1: res[1] };
+    }
+
     getUnavailableLocations() {
         let res = [];
         for (let player of Object.values(this.players)) {
@@ -241,7 +249,7 @@ class Board {
         let e = [];
         for (let [n, player] of Object.entries(this.players)) {
             let flag = false;
-            for (let [m, other] of Object.entries(this.players)) {
+            for (let [m, other] of Object.entries(this.getAllPlayers())) {
                 if (m === n) {
                     flag = flag || player.checkIfSnakeHitWall(this.width, this.height) || player.checkIfSnakeHitItself();
                 }
@@ -353,7 +361,7 @@ class Display {
     }
 
     toggleObjs() {
-        for (let player of Object.values(this.board.players)) {
+        for (let player of Object.values(this.board.getAllPlayers())) {
             player.snake.place.forEach((e) => { this.toggleClass(e, player.snake.cssClass) });
         }
         this.board.foods.foodList.forEach((f) => { this.toggleClass(f.location, f.foodType.class) });
@@ -406,7 +414,7 @@ class Display {
 
         this.toggleClassList(toggle);
 
-        if (this.board.players.length == 0) {
+        if (Object.keys(this.board.players).length == 0) {
             this.gameOver();
             return status.end;
         }
@@ -432,13 +440,16 @@ class Display {
     gameOver() {
         this.updateGameHeader('Game Over');
         this.saveResultsButton.disabled = false;
-        window.localStorage.setItem('lastScore', this.board.score);
+        let allPlayers = this.board.getAllPlayers();
+        window.localStorage.setItem('lastScore', Math.max(...Object.keys(allPlayers).map(n => allPlayers[n].score)));
     }
 
     reset() {
         this.toggleObjs();
-        this.board = new Board(this.board.width, this.board.height);
-        this.updateScoreDisplay();
+        this.board = new Board(this.board.width, this.board.height, this.board.multiplayer);
+        for (let n of Object.keys(this.board.players)) {
+            this.updateScoreDisplay(n);
+        }
         this.updateGameHeader('Snake');
         this.saveResultsButton.disabled = true;
         this.toggleObjs();
