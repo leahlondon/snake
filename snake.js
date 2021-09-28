@@ -1,25 +1,24 @@
 // constants and vars
-const actions = {
-    1: { 'ArrowLeft': 'left', 'ArrowRight': 'right', 'ArrowUp': 'up', 'ArrowDown': 'down' },
-    2: { 'a': 'left', 'd': 'right', 'w': 'up', 's': 'down' }
-};
-const events = {
-    add: { 1: 'add1', 2: 'add2' }, move: { 1: 'move1', 2: 'move2' }, collsion: {
-        1: 'collision1', 2: 'collision2'
-    }
-};
+const actions = [{ 'ArrowLeft': 'left', 'ArrowRight': 'right', 'ArrowUp': 'up', 'ArrowDown': 'down' },
+{ 'a': 'left', 'd': 'right', 'w': 'up', 's': 'down' }];
+const events = { move: 'move', add: 'add', collsion: 'collision', eaten: 'eaten', newFood: 'newFood' };
 const status = { end: 'end', ok: 'ok' };
-const classes = { pixel: 'pixel', backgroundPixel: 'backgroundPixel', snake1: 'snake1', snake2: 'snake2', apple: 'apple' }
-const pixelSize = 25;
+
+class Event {
+    constructor(type, obj) {
+        this.type = type;
+        this.obj = obj;
+    }
+}
 
 class Player {
-    constructor(snake, disabled = false) {
-        this.disabled = disabled;
+    constructor(id, snakeLoc, actions, disabled = false) {
+        this.id = id;
         this.score = 0;
-        this.snake = snake;
+        this.snake = new Snake(snakeLoc);
         this.action = 'up';
+        this.actions = actions;
         this.disabled = disabled;
-
     }
 
     disable() {
@@ -27,9 +26,6 @@ class Player {
     }
 
     checkIfGotFood(foods) {
-        if (this.disabled) {
-            return null;
-        }
         for (let food of foods.foodList) {
             if (this.snake.getHead().equal(food.location)) {
                 this.score += food.foodType.score;
@@ -74,20 +70,7 @@ class Foods {
         return this.foodList.map((e) => e.location);
     }
 
-    getFoodsByClass() {
-        let res = {};
-        for (let f of this.foodList) {
-            if (!res.hasOwnProperty(f.foodType.class)) {
-                res[f.foodType.class] = [f.location];
-            }
-            else {
-                res[f.foodType.class].push(f.location);
-            }
-        }
-        return res;
-    }
-
-    eat(food) {
+    removeFood(food) {
         for (let i = 0; i < this.foodList.length; i++) {
             if (this.foodList[i].location.equal(food.location)) {
                 this.foodList.splice(i, 1);
@@ -137,16 +120,16 @@ class Location {
 }
 
 class Board {
-    constructor(width = 50, height = 50, multiplayer = false) {
+    constructor(width = 50, height = 50, numPlayers = 1) {
         this.width = width;
         this.height = height;
+        this.numPlayers = numPlayers;
         // players
-        this.players = {};
-        this.disabledPlayers = {};
-        this.players[1] = new Player(new Snake(this.createRandomLocation(0.1, 0.8), classes.snake1), false);
-        this.players[2] = new Player(new Snake(this.createRandomLocation(0.1, 0.8), classes.snake2), !multiplayer);
-        this.updateEnabledPlayers();
-        this.multiplayer = multiplayer;
+        this.allPlayers = [];
+        for (let i = 0; i < numPlayers; i++) {
+            this.allPlayers.push(new Player(i + 1, this.createRandomLocation(0.1, 0.8), actions[i]));
+        }
+        this.enabledPlayers = this.allPlayers;
         // foods
         this.foods = new Foods();
         this.createFoodsOnBoard(2);
@@ -158,33 +141,20 @@ class Board {
         }
     }
 
-    updateEnabledPlayers() {
-        let enabled = {};
-        for (let [n, player] of Object.entries(this.players)) {
-            if (!player.disabled) {
-                enabled[n] = player;
-            }
-            else {
-                this.disabledPlayers[n] = player;
+    updateEnabledPlayers(updates) {
+        let newEnabled = [];
+        for (let i = 0; i < this.enabledPlayers.length; i++) {
+            if (!updates.includes(i)) {
+                newEnabled.push(this.enabledPlayers[i]);
             }
         }
-        this.players = enabled;
-    }
-
-    getAllPlayers() {
-        let res = { ...this.players, ...this.disabledPlayers };
-        if (this.multiplayer) {
-            return res;
-        }
-        return { 1: res[1] };
+        this.enabledPlayers = newEnabled;
     }
 
     getUnavailableLocations() {
         let res = [];
-        for (let player of Object.values(this.players)) {
-            if (player) {
-                res.push(...player.snake.place);
-            }
+        for (let player of this.allPlayers) {
+            res.push(...player.snake.place);
         }
         if (this.foods) {
             res.push(...this.foods.getFoodCurrentLocations());
@@ -208,68 +178,61 @@ class Board {
     }
 
     update() {
-        let returnVal = { 'eventsList': [], 'toggle': {} };
-
-        for (let player of Object.values(this.players)) {
-            returnVal.toggle[player.snake.cssClass] = [];
+        for (let player of this.enabledPlayers) {
             player.play();
         }
 
-        let col = this.checkCollision();
-        for (let [n, player] of Object.entries(this.players)) {
-            if (col.includes(events.collsion[n])) {
+        let eventsList = [];
+        let updates = [];
+        for (let i = 0; i < this.enabledPlayers.length; i++) {
+            let player = this.enabledPlayers[i];
+            let e = this.checkCollision(player);
+            if (e) {
                 player.snake.removeHead();
                 player.disable();
-                this.updateEnabledPlayers();
-                returnVal.eventsList.push(events.collsion[n]);
+                updates.push(i);
+                eventsList.push(e);
             }
         }
+        this.updateEnabledPlayers(updates);
 
-        let changed = new Foods();
-        for (let [n, player] of Object.entries(this.players)) {
+        for (let player of this.enabledPlayers) {
             let food = player.checkIfGotFood(this.foods);
             if (food) {
-                this.foods.eat(food);
+                this.foods.removeFood(food);
                 let newFood = this.foods.createNewFood(this.createRandomLocation());
-                changed.foodList.push(food, newFood);
-                returnVal.eventsList.push(events.add[n]);
-                returnVal.toggle[player.snake.cssClass].push(player.snake.getHead());
+                eventsList.push(new Event(events.eaten, food), new Event(events.newFood, newFood));
+                eventsList.push(new Event(events.add, player));
             }
             else {
                 player.snake.removeTail();
-                returnVal.eventsList.push(events.move[n]);
-                returnVal.toggle[player.snake.cssClass].push(player.snake.getHead(), player.snake.lastTail);
+                eventsList.push(new Event(events.move, player));
             }
         }
-        returnVal.toggle = { ...returnVal.toggle, ...changed.getFoodsByClass() };
-        return returnVal;
+        return eventsList;
     }
 
-    checkCollision() {
-        let e = [];
-        for (let [n, player] of Object.entries(this.players)) {
-            let flag = false;
-            for (let [m, other] of Object.entries(this.getAllPlayers())) {
-                if (m === n) {
-                    flag = flag || player.checkIfSnakeHitWall(this.width, this.height) || player.checkIfSnakeHitItself();
-                }
-                else {
-                    flag = flag || player.checkIfSnakeHitOtherPlayer(other);
-                }
+    checkCollision(player) {
+        let flag = false;
+        for (let other of this.allPlayers) {
+            if (player == other) { // maybe wont work
+                flag = flag || player.checkIfSnakeHitWall(this.width, this.height) || player.checkIfSnakeHitItself();
             }
-            if (flag) {
-                e.push(events.collsion[n]);
+            else {
+                flag = flag || player.checkIfSnakeHitOtherPlayer(other);
             }
         }
-        return e;
+        if (flag) {
+            return new Event(events.collsion, player);
+        }
+        return null;
     }
 }
 
 class Snake {
-    constructor(headLoc, cssClass) {
+    constructor(headLoc) {
         this.place = [headLoc];
         this.lastTail = this.getTail();
-        this.cssClass = cssClass;
     }
 
     getPlaceNoHead() {
@@ -298,10 +261,10 @@ class Snake {
 }
 
 class Game {
-    constructor(width = 50, height = 50, multiplayer = false) {
+    constructor(width = 50, height = 50, numPlayers = 1) {
+        this.numPlayers = numPlayers;
+        this.display = new Display(new Board(width, height, numPlayers), this.newGame.bind(this));
         this.intervalId = null;
-        this.multiplayer = multiplayer;
-        this.display = new Display(new Board(width, height, multiplayer), this.newGame.bind(this));
         this.timeTick = 150;
     }
 
@@ -322,9 +285,9 @@ class Game {
 
     getAction() {
         window.addEventListener('keydown', (e) => {
-            for (let [n, player] of Object.entries(this.display.board.players)) {
-                if (Object.keys(actions[n]).includes(e.key)) {
-                    player.action = actions[n][e.key];
+            for (let player of this.display.board.allPlayers) {
+                if (Object.keys(player.actions).includes(e.key)) {
+                    player.action = player.actions[e.key];
                 }
             }
         });
@@ -345,12 +308,18 @@ class Display {
     constructor(board, newGame) {
         this.board = board;
         this.pixels = [];
-        this.scoreDisplay = { 1: document.querySelector('#scoreDisplay1'), 2: document.querySelector('#scoreDisplay2') };
+        this.pixelSize = 25;
         this.gameHeader = document.querySelector('#header');
         this.boardDisplay = document.querySelector('#board');
         this.newGameButton = document.querySelector('#newGame');
         this.newGameFunction = newGame;
         this.saveResultsButton = document.querySelector('#saveResults');
+        this.scoreDisplay = {};
+        this.cssClasses = {};
+        for (let player of this.board.allPlayers) {
+            this.cssClasses[player.id] = `snake${player.id}`;
+            this.scoreDisplay[player.id] = document.querySelector('#scoreDisplay' + (player.id));
+        }
     }
 
     initiate() {
@@ -361,23 +330,23 @@ class Display {
     }
 
     toggleObjs() {
-        for (let player of Object.values(this.board.getAllPlayers())) {
-            player.snake.place.forEach((e) => { this.toggleClass(e, player.snake.cssClass) });
+        for (let player of this.board.allPlayers) {
+            player.snake.place.forEach((e) => { this.toggleClass(e, this.cssClasses[player.id]) });
         }
         this.board.foods.foodList.forEach((f) => { this.toggleClass(f.location, f.foodType.class) });
     }
 
     buildBoard() {
-        this.boardDisplay.style.width = `${this.board.width * pixelSize}px`;
+        this.boardDisplay.style.width = `${this.board.width * this.pixelSize}px`;
 
         for (let i = 0; i < this.board.height; i++) {
             let col = [];
             for (let j = 0; j < this.board.width; j++) {
                 let d = document.createElement('div');
-                d.classList.add(classes.pixel);
-                d.classList.toggle(classes.backgroundPixel);
-                d.style.width = `${pixelSize}px`;
-                d.style.height = `${pixelSize}px`;
+                d.classList.add('pixel');
+                d.classList.toggle('backgroundPixel');
+                d.style.width = `${this.pixelSize}px`;
+                d.style.height = `${this.pixelSize}px`;
                 this.boardDisplay.appendChild(d);
                 col.push(d);
             }
@@ -401,33 +370,35 @@ class Display {
         this.pixels[location.y][location.x].classList.toggle(cls);
     }
 
-    toggleClassList(lst) {
-        Object.keys(lst).forEach((c) => lst[c].forEach((e) => this.toggleClass(e, c)));
-    }
-
-    updateScoreDisplay(n) {
-        this.scoreDisplay[n].innerText = this.board.players[n].score;
+    updateScoreDisplay(player) {
+        this.scoreDisplay[player.id].innerText = player.score;
     }
 
     update() {
-        let { eventsList, toggle } = this.board.update();
-
-        this.toggleClassList(toggle);
-
-        if (Object.keys(this.board.players).length == 0) {
-            this.gameOver();
-            return status.end;
-        }
-        for (let [n, player] of Object.entries(this.board.players)) {
-            if (eventsList.includes(events.add[n])) {
-                this.updateScoreDisplay(n);
-            }
-        }
-
-        for (let [n, player] of Object.entries(this.board.disabledPlayers)) {
-            if (eventsList.includes(events.collsion[n])) {
+        let eventsList = this.board.update();
+        for (let e of eventsList) {
+            if (e.type === events.collsion) {
                 console.log("collision!");
             }
+
+            if (e.type === events.move) {
+                this.toggleClass(e.obj.snake.getHead(), this.cssClasses[e.obj.id]);
+                this.toggleClass(e.obj.snake.lastTail, this.cssClasses[e.obj.id]);
+            }
+
+            if (e.type === events.add) {
+                this.toggleClass(e.obj.snake.getHead(), this.cssClasses[e.obj.id]);
+                this.updateScoreDisplay(e.obj);
+            }
+
+            if (e.type === events.eaten || e.type === events.newFood) {
+                this.toggleClass(e.obj.location, e.obj.foodType.class);
+            }
+        }
+
+        if (this.board.enabledPlayers.length == 0) {
+            this.gameOver();
+            return status.end;
         }
 
         return status.ok;
@@ -440,16 +411,21 @@ class Display {
     gameOver() {
         this.updateGameHeader('Game Over');
         this.saveResultsButton.disabled = false;
-        let allPlayers = this.board.getAllPlayers();
-        window.localStorage.setItem('lastScore', Math.max(...Object.keys(allPlayers).map(n => allPlayers[n].score)));
+        window.localStorage.setItem('lastScore', Math.max(...this.board.allPlayers.map(p => p.score)));
+    }
+
+    createNewBoard() {
+        this.board = new Board(this.board.width, this.board.height, this.board.numPlayers);
+        for (let player of this.board.allPlayers) {
+            this.cssClasses[player.id] = `snake${player.id}`;
+            this.scoreDisplay[player.id] = document.querySelector('#scoreDisplay' + (player.id));
+            this.updateScoreDisplay(player);
+        }
     }
 
     reset() {
         this.toggleObjs();
-        this.board = new Board(this.board.width, this.board.height, this.board.multiplayer);
-        for (let n of Object.keys(this.board.players)) {
-            this.updateScoreDisplay(n);
-        }
+        this.createNewBoard();
         this.updateGameHeader('Snake');
         this.saveResultsButton.disabled = true;
         this.toggleObjs();
@@ -457,7 +433,7 @@ class Display {
 }
 
 // main
-const game = new Game(25, 25, true);
+const game = new Game(25, 25, 2);
 game.initiate();
 
 
