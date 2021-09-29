@@ -56,7 +56,9 @@ class Player {
 class Foods {
     constructor() {
         this.foodList = [];
-        this.options = [{ 'class': 'apple', 'score': 1 }]
+        let apple = { 'class': 'apple', 'score': 1 };
+        let blueberry = { 'class': 'blueberry', 'score': 2 };
+        this.options = [apple, apple, apple, blueberry];
     }
 
     createNewFood(foodLoc) {
@@ -381,17 +383,19 @@ class Display {
                 console.log("collision!");
             }
 
-            if (e.type === events.move) {
+            else if (e.type === events.move) {
                 this.toggleClass(e.obj.snake.getHead(), this.cssClasses[e.obj.id]);
                 this.toggleClass(e.obj.snake.lastTail, this.cssClasses[e.obj.id]);
             }
 
-            if (e.type === events.add) {
+            else if (e.type === events.add) {
                 this.toggleClass(e.obj.snake.getHead(), this.cssClasses[e.obj.id]);
                 this.updateScoreDisplay(e.obj);
+                let audio = new Audio('Munch _ Bite Sound Effect.mp3');
+                audio.play();
             }
 
-            if (e.type === events.eaten || e.type === events.newFood) {
+            else if (e.type === events.eaten || e.type === events.newFood) {
                 this.toggleClass(e.obj.location, e.obj.foodType.class);
             }
         }
