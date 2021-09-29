@@ -312,7 +312,7 @@ class Display {
         this.pixels = [];
         this.pixelSize = 25;
         this.gameHeader = document.querySelector('#header');
-        this.boardDisplay = document.querySelector('#board');
+        this.boardDisplay = document.querySelector('.board');
         this.newGameButton = document.querySelector('#newGame');
         this.newGameFunction = newGame;
         this.saveResultsButton = document.querySelector('#saveResults');

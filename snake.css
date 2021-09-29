@@ -2,11 +2,6 @@ html{
     font-family: 'Russo One', sans-serif;
 }
 
-#openingHeader{
-    display: flex;
-    flex-wrap: wrap;
-}
-
 .area{
     width: 50%;
     height: 100%;
@@ -92,7 +87,7 @@ html{
     margin-top: 1rem;
 }
 
-#board{
+.board{
     border: 10px solid black;
     display: flex;
     flex-wrap: wrap;
