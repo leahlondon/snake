@@ -113,6 +113,8 @@ class Pixels {
 
 class Display {
     constructor(width = 51, height = 18) {
+        this.startGameButton = document.querySelector("#startGameButton");
+        this.numPlayersSelect = document.querySelector('#numPlayersSelect');
         this.board = document.querySelector(".board");
         this.pixels = new Pixels(width, height, this.board);
         this.intervalId = null;
@@ -126,6 +128,11 @@ class Display {
     }
 
     initiate() {
+        this.buildNewGameButton();
+        this.startHeaderAnimation();
+    }
+
+    startHeaderAnimation() {
         this.intervalId = setInterval(() => {
             this.timeTickCounter++;
             if (this.timeTickCounter <= Object.keys(this.headerAnimation.frames).length) {
@@ -133,6 +140,13 @@ class Display {
             }
         }, this.timeTick);
     }
+
+    buildNewGameButton() {
+        this.startGameButton.addEventListener('click', () => {
+            window.localStorage.setItem('numPlayers', this.numPlayersSelect.value);
+        });
+    }
+
 }
 window.onload = () => {
     const display = new Display();

@@ -263,9 +263,9 @@ class Snake {
 }
 
 class Game {
-    constructor(width = 50, height = 50, numPlayers = 1) {
-        this.numPlayers = numPlayers;
-        this.display = new Display(new Board(width, height, numPlayers), this.newGame.bind(this));
+    constructor(width = 50, height = 50) {
+        this.numPlayers = this.getNumPlayers();
+        this.display = new Display(new Board(width, height, this.numPlayers), this.newGame.bind(this));
         this.intervalId = null;
         this.timeTick = 150;
     }
@@ -274,6 +274,10 @@ class Game {
         this.display.initiate();
         this.startTick();
         this.getAction();
+    }
+
+    getNumPlayers() {
+        return parseInt(window.localStorage.getItem('numPlayers'));
     }
 
     startTick() {
@@ -316,6 +320,7 @@ class Display {
         this.newGameButton = document.querySelector('#newGame');
         this.newGameFunction = newGame;
         this.saveResultsButton = document.querySelector('#saveResults');
+        this.manchAudio = new Audio('Munch _ Bite Sound Effect.mp3');
         this.scoreDisplay = {};
         this.cssClasses = {};
         for (let player of this.board.allPlayers) {
@@ -391,8 +396,7 @@ class Display {
             else if (e.type === events.add) {
                 this.toggleClass(e.obj.snake.getHead(), this.cssClasses[e.obj.id]);
                 this.updateScoreDisplay(e.obj);
-                let audio = new Audio('Munch _ Bite Sound Effect.mp3');
-                audio.play();
+                this.manchAudio.play();
             }
 
             else if (e.type === events.eaten || e.type === events.newFood) {
@@ -437,7 +441,7 @@ class Display {
 }
 
 // main
-const game = new Game(25, 25, 2);
+const game = new Game(25, 25);
 game.initiate();
 
 

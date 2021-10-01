@@ -152,6 +152,25 @@ html{
     background-color: blue;
 }
 
+#numPlayersSelection{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-content: center;
+}
+
+.dropDown{
+    font-family: 'Russo One', sans-serif;
+    font-size: 1.5rem;
+    text-decoration: none;
+    text-align: center;
+    align-self: center;
+    height: fit-content;
+    margin-left: 1rem;
+    border: 1px solid #168aad;
+    border-radius: 0.5rem;
+}
+
 .button{
     font-family: 'Russo One', sans-serif;
     font-size: 2rem;
