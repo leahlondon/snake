@@ -268,12 +268,13 @@ class Game {
         this.display = new Display(new Board(width, height, this.numPlayers), this.newGame.bind(this));
         this.intervalId = null;
         this.timeTick = 150;
+        this.waitingForKey = true;
     }
 
     initiate() {
         this.display.initiate();
-        this.startTick();
         this.getAction();
+        this.pressToStart();
     }
 
     getNumPlayers() {
@@ -299,14 +300,24 @@ class Game {
         });
     }
 
+    pressToStart() {
+        window.addEventListener('keydown', () => {
+            if (this.waitingForKey) {
+                this.waitingForKey = false;
+                this.display.gameStarted();
+                this.startTick();
+            }
+        });
+    }
+
     endTick() {
         clearInterval(this.intervalId);
     }
 
     newGame() {
-        this.endTick();
+        this.waitingForKey = true;
         this.display.reset();
-        this.startTick();
+        this.pressToStart();
     }
 }
 
@@ -321,6 +332,8 @@ class Display {
         this.newGameFunction = newGame;
         this.saveResultsButton = document.querySelector('#saveResults');
         this.manchAudio = new Audio('Munch _ Bite Sound Effect.mp3');
+        this.backgroundMusic = new Audio('Bit_Menu_-_David_Renda_-_FesliyanStudios.mp3');
+        this.backgroundMusic.loop = true;
         this.scoreDisplay = {};
         this.cssClasses = {};
         for (let player of this.board.allPlayers) {
@@ -417,9 +430,16 @@ class Display {
     }
 
     gameOver() {
+        this.backgroundMusic.pause();
+        this.backgroundMusic.currentTime = 0;
         this.updateGameHeader('Game Over');
         this.saveResultsButton.disabled = false;
         window.localStorage.setItem('lastScore', Math.max(...this.board.allPlayers.map(p => p.score)));
+    }
+
+    gameStarted() {
+        this.updateGameHeader('Snake');
+        this.backgroundMusic.play();
     }
 
     createNewBoard() {
@@ -434,7 +454,7 @@ class Display {
     reset() {
         this.toggleObjs();
         this.createNewBoard();
-        this.updateGameHeader('Snake');
+        this.updateGameHeader('Press any key to start...');
         this.saveResultsButton.disabled = true;
         this.toggleObjs();
     }
