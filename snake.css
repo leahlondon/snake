@@ -93,6 +93,11 @@ html{
     flex-wrap: wrap;
 }
 
+#headerBoard{
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+}
+
 #saveResults{
     margin-left: 1rem;
 }
