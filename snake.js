@@ -134,7 +134,7 @@ class Board {
         this.enabledPlayers = this.allPlayers;
         // foods
         this.foods = new Foods();
-        this.createFoodsOnBoard(2);
+        this.createFoodsOnBoard(this.numPlayers);
     }
 
     createFoodsOnBoard(n) {
@@ -315,9 +315,9 @@ class Game {
     }
 
     newGame() {
+        this.endTick();
         this.waitingForKey = true;
         this.display.reset();
-        this.pressToStart();
     }
 }
 
@@ -375,7 +375,10 @@ class Display {
     }
 
     buildNewGameButton() {
-        this.newGameButton.addEventListener('click', this.newGameFunction);
+        this.newGameButton.addEventListener('click', () => {
+            this.gameStopped();
+            this.newGameFunction();
+        });
     }
 
     buildSaveResultsButton() {
@@ -430,8 +433,7 @@ class Display {
     }
 
     gameOver() {
-        this.backgroundMusic.pause();
-        this.backgroundMusic.currentTime = 0;
+        this.gameStopped();
         this.updateGameHeader('Game Over');
         this.saveResultsButton.disabled = false;
         window.localStorage.setItem('lastScore', Math.max(...this.board.allPlayers.map(p => p.score)));
@@ -440,6 +442,11 @@ class Display {
     gameStarted() {
         this.updateGameHeader('Snake');
         this.backgroundMusic.play();
+    }
+
+    gameStopped() {
+        this.backgroundMusic.pause();
+        this.backgroundMusic.currentTime = 0;
     }
 
     createNewBoard() {
