@@ -1,6 +1,6 @@
-// constants and vars
+// constants
 const actions = [{ 'ArrowLeft': 'left', 'ArrowRight': 'right', 'ArrowUp': 'up', 'ArrowDown': 'down' },
-{ 'a': 'left', 'd': 'right', 'w': 'up', 's': 'down' }];
+{ 'KeyA': 'left', 'KeyD': 'right', 'KeyW': 'up', 'KeyS': 'down' }];
 const events = { move: 'move', add: 'add', collsion: 'collision', eaten: 'eaten', newFood: 'newFood' };
 const status = { end: 'end', ok: 'ok' };
 
@@ -293,8 +293,8 @@ class Game {
     getAction() {
         window.addEventListener('keydown', (e) => {
             for (let player of this.display.board.allPlayers) {
-                if (Object.keys(player.actions).includes(e.key)) {
-                    player.action = player.actions[e.key];
+                if (Object.keys(player.actions).includes(e.code)) {
+                    player.action = player.actions[e.code];
                 }
             }
         });
