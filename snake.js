@@ -477,8 +477,8 @@ class Display {
         this.newGameButton = document.querySelector('#newGame');
         this.newGameFunction = newGame;
         this.saveResultsButton = document.querySelector('#saveResults');
-        this.manchAudio = new Audio('Munch _ Bite Sound Effect.mp3');
-        this.backgroundMusic = new Audio('Bit_Menu_-_David_Renda_-_FesliyanStudios.mp3');
+        this.manchAudio = new Audio('sounds\\munch.mp3');
+        this.backgroundMusic = new Audio('sounds\\Bit_Menu_-_David_Renda_-_FesliyanStudios.mp3');
         this.backgroundMusic.loop = true;
         // dictionaries whose keys are the this.board.allPlayers id's. 
         this.scoreDisplay = {};

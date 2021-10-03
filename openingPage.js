@@ -1,3 +1,6 @@
+/**
+ * letters' animations - [x,y] coordinates that will be colored at each time tick.
+ */
 const sLetterAnimation = {
     1: [[18, 10], [24, 4], [24, 10], [31, 4]],
     2: [[18, 9], [23, 4], [24, 5], [24, 9], [25, 10], [31, 5]],
@@ -54,21 +57,39 @@ const eLetterAnimation = {
 
 const headerAnimations = [sLetterAnimation, nLetterAnimation, aLetterAnimation, kLetterAnimation, eLetterAnimation];
 
+/**
+ * Animation holds a dictionary of "frames" - 
+ * the key is the frame number (starts from 1) and the value is a list of the pixels' coordinates that will "change".
+ * meaning, if the pixel isn't colored it will become colored and vice versa.
+ */
 class Animation {
     constructor() {
         this.frames = {};
     }
-
-    addFrames(otherAnimationArray) {
-        for (let k of Object.keys(otherAnimationArray)) {
+    /**
+     * adds other frames to this.frames.
+     * @param {*} otherFrames a dictionary of frames as explained above.
+     */
+    addFrames(otherFrames) {
+        for (let k of Object.keys(otherFrames)) {
             if (Object.keys(this.frames).includes(k)) {
-                this.frames[k].push(...otherAnimationArray[k]);
+                for (let pixel of otherFrames[k]) {
+                    if (!this.frames[k].includes(pixel))
+                        this.frames[k].push(pixel);
+                }
             }
             else {
-                this.frames[k] = otherAnimationArray[k];
+                this.frames[k] = otherFrames[k];
             }
         }
     }
+    /**
+     * adds or substracts a given number of pixels from every pixel's coordinates.
+     * for example, shiftAnimation(0, 5) will move the animation 5 pixels right the x axis.
+     * shiftAnimation(1, -4) will move the animation 4 pixels up the y axis.
+     * @param {*} coordinate a number, what coordinate to change - 0 for x, 1 for y.
+     * @param {*} pixels a number, the number of pixels to add or subtract.
+     */
     shiftAnimation(coordinate, pixels) {
         for (let k of Object.keys(this.frames)) {
             this.frames[k].forEach(element => { element[coordinate] += pixels });
@@ -76,7 +97,18 @@ class Animation {
     }
 }
 
+/**
+ * Pixels represents a two dimentional array of html div elements.
+ * these elements creates a board.
+ * Pixels can easily color pixels using x,y coordinates.
+ */
 class Pixels {
+    /**
+     * constructor method.
+     * @param {*} width a number, the width of the board.
+     * @param {*} height a number, the height of the board.
+     * @param {*} htmlFather html element, the pixels will be created as his children.
+     */
     constructor(width, height, htmlFather) {
         this.father = htmlFather;
         this.width = width;
@@ -84,6 +116,11 @@ class Pixels {
         this.pixelSize = 25;
         this.pixelsArray = this.buildPixelsArray();
     }
+    /**
+     * toggle a given css class of a given pixel.
+     * @param {*} coordinates [x, y], the cooredinates of the desired pixel.
+     * @param {*} cssClass String, the css class.
+     */
     togglePixels(coordinates, cssClass) {
         for (let c of coordinates) {
             let x = c[0];
@@ -91,7 +128,10 @@ class Pixels {
             this.pixelsArray[x][y].classList.toggle(cssClass);
         }
     }
-
+    /**
+     * build the actual board with html elememts.
+     * @returns a two dimentional array of the pixels, represented by html div elements.
+     */
     buildPixelsArray() {
         this.father.style.width = `${this.width * this.pixelSize}px`;
         let pixels = [];
@@ -111,7 +151,16 @@ class Pixels {
     }
 }
 
+/**
+ * Display is responsible for creating event listners of the buttons on the page.
+ * Display draws the Animation on a Pixels object.
+ */
 class Display {
+    /**
+     * constructor method.
+     * @param {*} width a number, the width of the board.
+     * @param {*} height a number, the height of the board.
+     */
     constructor(width = 51, height = 18) {
         this.startGameButton = document.querySelector("#startGameButton");
         this.numPlayersSelect = document.querySelector('#numPlayersSelect');
@@ -126,12 +175,18 @@ class Display {
         }
         this.headerAnimation.shiftAnimation(0, -16);
     }
-
+    /**
+     * creates the event listenet for this.startGameButton.
+     * draws the header animation.
+     */
     initiate() {
-        this.buildNewGameButton();
+        this.buildStartGameButton();
         this.startHeaderAnimation();
     }
-
+    /**
+     * draws the header animation.
+     * each time tick, toggles the listed pixels in this.headerAnimation.
+     */
     startHeaderAnimation() {
         this.intervalId = setInterval(() => {
             this.timeTickCounter++;
@@ -140,14 +195,19 @@ class Display {
             }
         }, this.timeTick);
     }
-
-    buildNewGameButton() {
+    /**
+     * creates the event listenet for this.startGameButton.
+     * when the user clicks the button, the selected number of players is saves in window.localStorage
+     * and the user is transfered to snake.html.
+     */
+    buildStartGameButton() {
         this.startGameButton.addEventListener('click', () => {
             window.localStorage.setItem('numPlayers', this.numPlayersSelect.value);
         });
     }
-
 }
+
+// main
 window.onload = () => {
     const display = new Display();
     display.initiate();
