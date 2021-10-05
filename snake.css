@@ -79,6 +79,14 @@ html{
     margin: 1rem;
 }
 
+.smallHeader{
+    font-size: 2rem;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    display: block;
+    font-weight: bold;
+}
+
 .buttonPanel{
     display: flex;
     flex-direction: row;
@@ -91,6 +99,13 @@ html{
     border: 10px solid black;
     display: flex;
     flex-wrap: wrap;
+}
+
+.appearingText{
+    display: none;
+    font-family: 'Russo One', sans-serif;
+    font-size: 1.5rem;
+    text-decoration: none;
 }
 
 #headerBoard{

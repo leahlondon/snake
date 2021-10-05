@@ -1,4 +1,9 @@
 /**
+ * openingPage.js conatains the logic of openingPage.html which is the preview page of the game.
+ * the main class in openingPage.js is Display - this class controls and manages the html elements in the page.
+ */
+
+/**
  * letters' animations - [x,y] coordinates that will be colored at each time tick.
  */
 const sLetterAnimation = {
@@ -59,7 +64,7 @@ const headerAnimations = [sLetterAnimation, nLetterAnimation, aLetterAnimation, 
 
 /**
  * Animation holds a dictionary of "frames" - 
- * the key is the frame number (starts from 1) and the value is a list of the pixels' coordinates that will "change".
+ * the key is the frame number (starts from 1) and the value is a list of the pixels' coordinates that will "change" on this frame.
  * meaning, if the pixel isn't colored it will become colored and vice versa.
  */
 class Animation {
@@ -67,7 +72,7 @@ class Animation {
         this.frames = {};
     }
     /**
-     * adds other frames to this.frames.
+     * adds another frames to this.frames.
      * @param {*} otherFrames a dictionary of frames as explained above.
      */
     addFrames(otherFrames) {
@@ -99,8 +104,8 @@ class Animation {
 
 /**
  * Pixels represents a two dimentional array of html div elements.
- * these elements creates a board.
- * Pixels can easily color pixels using x,y coordinates.
+ * these elements creates the board.
+ * Pixels can easily color a pixel using x,y coordinates.
  */
 class Pixels {
     /**
@@ -114,7 +119,7 @@ class Pixels {
         this.width = width;
         this.height = height;
         this.pixelSize = 25;
-        this.pixelsArray = this.buildPixelsArray();
+        this.pixelsArray = this.#buildPixelsArray();
     }
     /**
      * toggle a given css class of a given pixel.
@@ -129,10 +134,10 @@ class Pixels {
         }
     }
     /**
-     * build the actual board with html elememts.
+     * builds the actual board with html elements.
      * @returns a two dimentional array of the pixels, represented by html div elements.
      */
-    buildPixelsArray() {
+    #buildPixelsArray() {
         this.father.style.width = `${this.width * this.pixelSize}px`;
         let pixels = [];
         for (let i = 0; i < this.height; i++) {
@@ -152,7 +157,7 @@ class Pixels {
 }
 
 /**
- * Display is responsible for creating event listners of the buttons on the page.
+ * Display is responsible for creating the event listners of buttons on the page.
  * Display draws the Animation on a Pixels object.
  */
 class Display {
@@ -164,6 +169,10 @@ class Display {
     constructor(width = 51, height = 18) {
         this.startGameButton = document.querySelector("#startGameButton");
         this.numPlayersSelect = document.querySelector('#numPlayersSelect');
+        this.howToPlayButton = document.querySelector('#howToPlayButton');
+        this.howToPlayText = document.querySelector('#howToPlayText');
+        this.aboutButton = document.querySelector('#aboutButton');
+        this.aboutText = document.querySelector('#aboutText');
         this.board = document.querySelector(".board");
         this.pixels = new Pixels(width, height, this.board);
         this.intervalId = null;
@@ -176,18 +185,20 @@ class Display {
         this.headerAnimation.shiftAnimation(0, -16);
     }
     /**
-     * creates the event listenet for this.startGameButton.
+     * creates the event listener for this.startGameButton.
      * draws the header animation.
      */
     initiate() {
-        this.buildStartGameButton();
-        this.startHeaderAnimation();
+        this.#buildStartGameButton();
+        this.#buildhowToPlayButton();
+        this.#buildAboutButton();
+        this.#startHeaderAnimation();
     }
     /**
      * draws the header animation.
      * each time tick, toggles the listed pixels in this.headerAnimation.
      */
-    startHeaderAnimation() {
+    #startHeaderAnimation() {
         this.intervalId = setInterval(() => {
             this.timeTickCounter++;
             if (this.timeTickCounter <= Object.keys(this.headerAnimation.frames).length) {
@@ -196,13 +207,33 @@ class Display {
         }, this.timeTick);
     }
     /**
-     * creates the event listenet for this.startGameButton.
-     * when the user clicks the button, the selected number of players is saves in window.localStorage
+     * creates the event listener for this.startGameButton.
+     * when the user clicks the button, the selected number of players is saved in window.localStorage
      * and the user is transfered to snake.html.
      */
-    buildStartGameButton() {
+    #buildStartGameButton() {
         this.startGameButton.addEventListener('click', () => {
             window.localStorage.setItem('numPlayers', this.numPlayersSelect.value);
+        });
+    }
+    /**
+     * creates the event listener for this.howToPlayButton.
+     * when the user clicks the button, the relevent information appears.
+     */
+    #buildhowToPlayButton() {
+        this.howToPlayButton.addEventListener('click', () => {
+            this.howToPlayText.style.display = 'block';
+            this.aboutText.style.display = 'none';
+        });
+    }
+    /**
+     * creates the event listener for this.aboutButton.
+     * when the user clicks the button, the relevent information appears.
+     */
+    #buildAboutButton() {
+        this.aboutButton.addEventListener('click', () => {
+            this.howToPlayText.style.display = 'none';
+            this.aboutText.style.display = 'block';
         });
     }
 }
