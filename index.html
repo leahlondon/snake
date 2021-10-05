@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="snake.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Russo+One&display=swap" rel="stylesheet">
+    <title>Snake</title>
+</head>
+
+<body>
+    <main class="mainPanel">
+        <section class="board" id="headerBoard"></section>
+        <nav class="buttonPanel">
+            <a href="snake.html" class="button" id="startGameButton">Start!</a>
+            <div id="numPlayersSelection" class="button">
+                <label id="numPlayersLabel" for="numPlayersSelect">Number Of Players: </label>
+                <select name="numPlayers" id="numPlayersSelect" class="dropDown">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                </select>
+            </div>
+            <button class="button" id="howToPlayButton">How to play?</button>
+            <button class="button" id="aboutButton">About</button>
+        </nav>
+        <div id="howToPlayText" class="appearingText">
+            <p><span class="smallHeader">Goal</span>
+                Gain points by making your snake eat apples and other tasty fruits!<br>
+                Be careful and stay away from other players and the board edges - they can be dangerous!<br>
+                The player with the highest score wins the game.
+            </p>
+            <p>
+                <span class="smallHeader">Players' Keys</span>
+                <b>Player1</b> - arrow keys <br>
+                <b>Player2</b> - w, s, a, d keys <br>
+            </p>
+        </div>
+        <div id="aboutText" class="appearingText">
+            <p><span class="smallHeader">Creator</span>
+                Leah London Arazi
+            </p>
+            <p>
+                <i>A spaciel thanks to Ido Weinstein for his support and guidance.</i>
+            </p>
+        </div>
+    </main>
+    <div class="area">
+        <img src="pictures\snakeLogoSmall.png" alt="" class="snakeLogo">
+        <img src="pictures\snakeLogoSmall.png" alt="" class="snakeLogo">
+        <img src="pictures\snakeLogoSmall.png" alt="" class="snakeLogo">
+        <img src="pictures\snakeLogoSmall.png" alt="" class="snakeLogo">
+        <img src="pictures\snakeLogoSmall.png" alt="" class="snakeLogo">
+        <img src="pictures\snakeLogoSmall.png" alt="" class="snakeLogo">
+    </div>
+    <script src="openingPage.js"></script>
+</body>
+
+</html>
