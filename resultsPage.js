@@ -1,11 +1,15 @@
 /**
- * Results loads and writes users results to window.localStorage.
+ * resultsPage.js conatains the logic of resultsPage.html which allows the user to save his result and to see other users' results. 
+ */
+
+/**
+ * Results loads and writes users' results to window.localStorage.
  * a single result is represented by an object that holds the player name, his score and the time the result was saved.
  * for example: { 'playerName': 'leah', 'score': 10000, 'time': '02/10/2021, 11:18:56' }
  */
 class Results {
     /**
-     * constructor methods.
+     * constructor method.
      */
     constructor() {
         this.data = this.parseResults(); // represents by a list of results (as explained above)
@@ -54,7 +58,7 @@ class Results {
 }
 
 /**
- * Display is responsible for creating event listners of the buttons on the page and creating the results table.
+ * Display is responsible for creating the event listners of buttons on the page and creating the results table.
  */
 class Display {
     /**
@@ -73,14 +77,14 @@ class Display {
      * this method is called right after resultsPage.html loads.
      */
     initiate() {
-        this.setResultDisplay(this.results.currentScore);
-        this.buildSaveButton();
+        this.#setResultDisplay(this.results.currentScore);
+        this.#buildSaveButton();
     }
     /**
      * sets the current result display with a given text.
      * @param {*} text String, the new text.
      */
-    setResultDisplay(text) {
+    #setResultDisplay(text) {
         this.resultDisplay.innerText = text;
     }
     /**
@@ -88,18 +92,18 @@ class Display {
      * when the user clicks the button, the current result is saved to this.results
      * and the results table will appear.
      */
-    buildSaveButton() {
+    #buildSaveButton() {
         this.saveResultButton.addEventListener('click', () => {
             this.results.saveCurrentResult(this.playerNameInput.value);
             this.saveResultButton.disabled = true;
-            this.buildResultsTable();
+            this.#buildResultsTable();
         });
     }
     /**
      * builds a table with the data from this.results.
-     * the table is being built with html elements.
+     * the table is built with html elements.
      */
-    buildResultsTable() {
+    #buildResultsTable() {
         // unhide table text header
         this.allResultsHeader.style.display = 'block';
 

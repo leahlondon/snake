@@ -90,8 +90,8 @@ class Animation {
     }
     /**
      * adds or substracts a given number of pixels from every pixel's coordinates.
-     * for example, shiftAnimation(0, 5) will move the animation 5 pixels right the x axis.
-     * shiftAnimation(1, -4) will move the animation 4 pixels up the y axis.
+     * for example, shiftAnimation(0, 5) will move the animation 5 pixels right along the x axis.
+     * shiftAnimation(1, -4) will move the animation 4 pixels up along the y axis.
      * @param {*} coordinate a number, what coordinate to change - 0 for x, 1 for y.
      * @param {*} pixels a number, the number of pixels to add or subtract.
      */
