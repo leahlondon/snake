@@ -3,7 +3,7 @@
  * there are 3 important classes in this file:
  * 1) Game - gets the user input and updates the Display every time tick.
  * 2) Board - holds the main logic of the game - moves the Snakes, checks for collisions and updates Display accordingly. 
- * 3) Display - controls the different html elements in snake.html like buttons, headers and the game's board.
+ * 3) Display - controls the different html elements in snake.html like buttons, headers, the game's board etc.
  */
 
 // constants
@@ -24,7 +24,7 @@ class Location {
         this.y = y;
     }
     /**
-     * checkes of this Location equals other Location object.
+     * checkes if this Location equals other Location object.
      * @param {*} other Location object.
      * @returns true if equal, otherwise false.
      */
@@ -46,7 +46,7 @@ class Location {
     }
     /**
      * creates a new Location object that represents the next location.
-     * the next location depends this Location and the given action.
+     * the next location depends on this Location and the given action.
      * @param {*} action String that represents an action of some game player.
      * @returns Location object.
      */
@@ -121,7 +121,7 @@ class Snake {
     }
     /**
      * adds new Location object to the first index of this.place, meaning, updating the head's location.
-     * @param {*} action String that represents an action of some game player.
+     * @param {*} action String that represents an action of a player.
      */
 
     moveHead(action) {
@@ -191,7 +191,7 @@ class Player {
         return (this.snake.getHead().isInList([...otherPlayer.snake.place]));
     }
     /**
-     * checks if the Snake's head is the same location as the boay of the Snake (self loop).
+     * checks if the Snake's head is the same location as the body of the Snake (self loop).
      * @returns true if the Snake hit itself, else false.
      */
     checkIfSnakeHitItself() {
@@ -206,7 +206,7 @@ class Player {
 }
 
 /**
- * FoodType consists of a class and the a score and represents a certain food type in the game.
+ * FoodType consists of a class and a score and represents a certain food type in the game.
  */
 class FoodType {
     /**
@@ -320,28 +320,29 @@ class Board {
         this.numPlayers = numPlayers;
         this.allPlayers = [];
         for (let i = 0; i < numPlayers; i++) {
-            this.allPlayers.push(new Player(i + 1, this.createRandomLocation(0.1, 0.8)));
+            this.allPlayers.push(new Player(i + 1, this.#createRandomLocation(0.1, 0.8)));
         }
         this.enabledPlayers = this.allPlayers;
         // foods
         this.foods = new Foods();
-        this.createFoodsOnBoard(this.numPlayers);
+        this.#createFoodsOnBoard(this.numPlayers);
     }
 
     /**
      * adds multiple new foods to this.foods according to a given value.
      * @param {*} n a number, the number of new foods to create.
      */
-    createFoodsOnBoard(n) {
+    #createFoodsOnBoard(n) {
         for (let i = 0; i < n; i++) {
-            this.foods.createNewFood(this.createRandomLocation());
+            this.foods.createNewFood(this.#createRandomLocation());
         }
     }
     /**
-     * returns a list of Location objects that represents the locations on the Board that has Player's Snake/FoodItem on them.
+     * returns a list of Location objects. 
+     * the list represents the locations on the Board that have a Player's Snake/FoodItem on them.
      * @returns a list of Location objects.
      */
-    getUnavailableLocations() {
+    #getUnavailableLocations() {
         let res = [];
         for (let player of this.allPlayers) {
             res.push(...player.snake.place);
@@ -363,7 +364,7 @@ class Board {
      *  #   #   #   #   #   #
      *  #   #   #   #   #   #
      *  #   #   #   #   #   #
-     * createRandomLocation(from = 0, over = 0.5) - will create a location at the left top 1/4 of the board:
+     * createRandomLocation(from = 0, over = 0.5) - will create a location at the top left 1/4 of the board:
      *  $   $   $   #   #   #
      *  $   $   $   #   #   #
      *  $   $   $   #   #   #
@@ -379,8 +380,8 @@ class Board {
      *  #   #   #   #   #   #
      * @returns Location object.
      */
-    createRandomLocation(from = 0, over = 1) {
-        let unavailableLocs = this.getUnavailableLocations();
+    #createRandomLocation(from = 0, over = 1) {
+        let unavailableLocs = this.#getUnavailableLocations();
         let location;
         do {
             let x = Math.floor(Math.random() * this.width * over + this.width * from);
@@ -394,11 +395,11 @@ class Board {
 
     }
     /**
-     * help method. removes disabled Players from this.enabledPlayers.
+     * removes disabled Players from this.enabledPlayers.
      * @param {*} updates a list of numbers that represents the indexies of Players in this.enabledPlayers
      * that no are longer enabled, meaning, these Players have been disqualified.
      */
-    updateEnabledPlayers(updates) {
+    #updateEnabledPlayers(updates) {
         let newEnabled = [];
         for (let i = 0; i < this.enabledPlayers.length; i++) {
             if (!updates.includes(i)) {
@@ -422,21 +423,21 @@ class Board {
         // check if there are players that got disqualified
         for (let i = 0; i < this.enabledPlayers.length; i++) {
             let player = this.enabledPlayers[i];
-            if (this.checkCollision(player)) {
+            if (this.#checkCollision(player)) {
                 player.snake.removeHead();
                 player.disable();
                 updates.push(i);
                 eventsList.push(new Event(events.collsion, player));
             }
         }
-        this.updateEnabledPlayers(updates);
+        this.#updateEnabledPlayers(updates);
 
         // check if any of the enabled players got food
         for (let player of this.enabledPlayers) {
             let food = player.checkIfGotFood(this.foods);
             if (food) {
                 this.foods.removeFood(food);
-                let newFood = this.foods.createNewFood(this.createRandomLocation());
+                let newFood = this.foods.createNewFood(this.#createRandomLocation());
                 eventsList.push(new Event(events.eaten, food), new Event(events.newFood, newFood));
                 eventsList.push(new Event(events.add, player));
             }
@@ -453,7 +454,7 @@ class Board {
      * @param {*} player Player object.
      * @returns true if got disqualified, else false.
      */
-    checkCollision(player) {
+    #checkCollision(player) {
         let flag = false;
         for (let other of this.allPlayers) {
             if (player == other) {
@@ -468,7 +469,7 @@ class Board {
 }
 
 /**
- * Display is responsible for controlling and managing the .html (snake.html) and .css (snake.css) documents that displays the game to the user.
+ * Display is responsible for controlling and managing the .html (snake.html) and .css (snake.css) documents that animate the game.
  */
 class Display {
     /**
@@ -502,20 +503,20 @@ class Display {
      */
     initiate() {
         // creates the board's pixels (this.pixels)
-        this.buildBoard();
+        this.#buildBoard();
         // creates event listener for this.newGameButton
-        this.buildNewGameButton();
+        this.#buildNewGameButton();
         // creates event listener for this.saveResultsButton
-        this.buildSaveResultsButton();
+        this.#buildSaveResultsButton();
         // draws current elements (Players' Snakes/Foods on this.board)
-        this.toggleObjs();
+        this.#toggleObjs();
     }
     /**
      * creates this.pixels two dimentional array. 
      * each pixel is a div html element with the css classes of 'pixel' and 'backgroundPixel'.
      * the pixels are added as children to this.boardDisplay html element.
      */
-    buildBoard() {
+    #buildBoard() {
         this.boardDisplay.style.width = `${this.board.width * this.pixelSize}px`;
 
         for (let i = 0; i < this.board.height; i++) {
@@ -536,7 +537,7 @@ class Display {
      * creates event listener for this.newGameButton.
      * when the user clicks on this button the current game stops and a new game loads.
      */
-    buildNewGameButton() {
+    #buildNewGameButton() {
         this.newGameButton.addEventListener('click', () => {
             this.gameStopped();
             this.newGameFunction();
@@ -547,7 +548,7 @@ class Display {
      * creates event listener for this.saveResultsButton.
      * when the user clicks on this button, the user is being transfered to resultsPage.html.
      */
-    buildSaveResultsButton() {
+    #buildSaveResultsButton() {
         this.saveResultsButton.disabled = true;
         this.saveResultsButton.addEventListener('click', () => {
             location.href = "resultsPage.html";
@@ -557,18 +558,18 @@ class Display {
     /**
      * turns on/off the display of the Players and the Foods on the board.
      */
-    toggleObjs() {
+    #toggleObjs() {
         for (let player of this.board.allPlayers) {
-            player.snake.place.forEach((e) => { this.toggleClass(e, this.cssClasses[player.id]) });
+            player.snake.place.forEach((e) => { this.#toggleClass(e, this.cssClasses[player.id]) });
         }
-        this.board.foods.foodList.forEach((f) => { this.toggleClass(f.location, f.foodType.foodClass) });
+        this.board.foods.foodList.forEach((f) => { this.#toggleClass(f.location, f.foodType.foodClass) });
     }
     /**
      * gets a location on the board and toggles the given class of the pixel at that location.
      * @param {*} location Location object.
      * @param {*} cls String, represents a css class.
      */
-    toggleClass(location, cls) {
+    #toggleClass(location, cls) {
         this.pixels[location.y][location.x].classList.toggle(cls);
     }
     /**
@@ -584,22 +585,23 @@ class Display {
             }
 
             else if (e.type === events.move) {
-                this.toggleClass(e.obj.snake.getHead(), this.cssClasses[e.obj.id]);
-                this.toggleClass(e.obj.snake.lastTail, this.cssClasses[e.obj.id]);
+                this.#toggleClass(e.obj.snake.getHead(), this.cssClasses[e.obj.id]);
+                this.#toggleClass(e.obj.snake.lastTail, this.cssClasses[e.obj.id]);
             }
 
             else if (e.type === events.add) {
-                this.toggleClass(e.obj.snake.getHead(), this.cssClasses[e.obj.id]);
+                this.#toggleClass(e.obj.snake.getHead(), this.cssClasses[e.obj.id]);
                 this.updateScoreDisplay(e.obj);
                 this.manchAudio.play();
             }
 
             else if (e.type === events.eaten || e.type === events.newFood) {
-                this.toggleClass(e.obj.location, e.obj.foodType.foodClass);
+                this.#toggleClass(e.obj.location, e.obj.foodType.foodClass);
             }
         }
-        // if the game has ended the display will return status.end to the Game object that will result by stopping the main loop.
-        // in addition, this.gameOver is called so the buttons and headers are updates accordingly.
+        /** if the game has ended the display will return status.end to the Game object that will result in stopping the main loop.
+        * in addition, this.gameOver is called so the buttons and headers are updates accordingly.
+        */
         if (this.board.enabledPlayers.length == 0) {
             this.gameOver();
             return status.end;
@@ -647,20 +649,20 @@ class Display {
      */
     reset() {
         // "delete" the display of all elements on board (Players' Snakes/Foods)
-        this.toggleObjs();
+        this.#toggleObjs();
         // creates a new Board object
-        this.createNewBoard();
+        this.#createNewBoard();
         // updates game header
         this.updateGameHeader('Press any key to start...');
         // by default, this button is disabled
         this.saveResultsButton.disabled = true
         // "draw" all the of all elements on the new board (Players' Snakes/Foods)
-        this.toggleObjs();
+        this.#toggleObjs();
     }
     /**
      * creates new Board object and updates this.board, this.cssClasses and this.scoreDisplay accordingly.
      */
-    createNewBoard() {
+    #createNewBoard() {
         this.board = new Board(this.board.width, this.board.height, this.board.numPlayers);
         for (let player of this.board.allPlayers) {
             this.cssClasses[player.id] = `snake${player.id}`;
@@ -689,7 +691,7 @@ class Game {
      * @param {*} height a number, board's height
      */
     constructor(width = 50, height = 50) {
-        this.numPlayers = this.getNumPlayers();
+        this.numPlayers = this.#getNumPlayers();
         this.timeTick = 150;
         this.actions = {
             1: { 'ArrowLeft': 'left', 'ArrowRight': 'right', 'ArrowUp': 'up', 'ArrowDown': 'down' },
@@ -709,14 +711,14 @@ class Game {
         // draws the board and the Players' Snakes/Foods on it.
         this.display.initiate();
         // creates the event listener for getting Players' actions from user.
-        this.getAction();
+        this.#getAction();
         // creates the event listener for starting the game.
-        this.pressToStart();
+        this.#pressToStart();
     }
     /**
      * creates the event listener for getting Players' actions from user.
      */
-    getAction() {
+    #getAction() {
         window.addEventListener('keydown', (e) => {
             for (let player of this.display.board.allPlayers) {
                 if (Object.keys(this.actions[player.id]).includes(e.code)) {
@@ -729,7 +731,7 @@ class Game {
      * creates the event listener for starting the game: 
      * the actual game will start when the user presses any key on the keyboard.
      */
-    pressToStart() {
+    #pressToStart() {
         window.addEventListener('keydown', () => {
             if (this.waitingForKey) {
                 this.waitingForKey = false;
@@ -742,7 +744,7 @@ class Game {
      * gets the number of players which was chosen by the user in openingPage.html.
      * @returns a number, the number of players.
      */
-    getNumPlayers() {
+    #getNumPlayers() {
         return parseInt(window.localStorage.getItem('numPlayers'));
     }
     /**
