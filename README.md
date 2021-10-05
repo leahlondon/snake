@@ -13,4 +13,4 @@ https://user-images.githubusercontent.com/56797573/136078748-f5acd11d-b9be-46ad-
 How to start playing?
 -----------
 Clone the project and open "openingPage.html" via your web browser.
-To read more about the game on click the button "How to play" in "openingPage.html".
+To read more about the game click the button "How to play" in "openingPage.html".
