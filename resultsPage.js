@@ -4,7 +4,7 @@
 
 /**
  * Results loads and writes users' results to window.localStorage.
- * a single result is represented by an object that holds the player name, his score and the time the result was saved.
+ * a single result is represented by an object that holds the player name, his score and the saving time.
  * for example: { 'playerName': 'leah', 'score': 10000, 'time': '02/10/2021, 11:18:56' }
  */
 class Results {
@@ -40,7 +40,7 @@ class Results {
     }
     /**
      * Saves the current result with a given player name and the current time.
-     * @param {*} playerName String, the player name from the user.
+     * @param {*} playerName String, the player name from the user input.
      */
     saveCurrentResult(playerName) {
         let date = new Date();
@@ -94,9 +94,11 @@ class Display {
      */
     #buildSaveButton() {
         this.saveResultButton.addEventListener('click', () => {
-            this.results.saveCurrentResult(this.playerNameInput.value);
-            this.saveResultButton.disabled = true;
-            this.#buildResultsTable();
+            if (this.playerNameInput.value.length > 0) {
+                this.results.saveCurrentResult(this.playerNameInput.value);
+                this.saveResultButton.disabled = true;
+                this.#buildResultsTable();
+            }
         });
     }
     /**
@@ -134,5 +136,6 @@ class Display {
     }
 }
 
+// main
 const display = new Display();
 display.initiate();

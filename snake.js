@@ -1,3 +1,11 @@
+/**
+ * snake.js conatains the logic of snake.html which is the game page.
+ * there are 3 important classes in this file:
+ * 1) Game - gets the user input and updates the Display every time tick.
+ * 2) Board - holds the main logic of the game - moves the Snakes, checks for collisions and updates Display accordingly. 
+ * 3) Display - controls the different html elements in snake.html like buttons, headers and the game's board.
+ */
+
 // constants
 const events = { move: 'move', add: 'add', collsion: 'collision', eaten: 'eaten', newFood: 'newFood' };
 const status = { end: 'end', ok: 'ok' };
