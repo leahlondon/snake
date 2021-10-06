@@ -487,7 +487,9 @@ class Display {
         this.newGameFunction = newGame;
         this.saveResultsButton = document.querySelector('#saveResults');
         this.manchAudio = new Audio('sounds\\munch.mp3');
+        this.squishAudio = new Audio('sounds\\squish.mp3');
         this.backgroundMusic = new Audio('sounds\\Bit_Menu_-_David_Renda_-_FesliyanStudios.mp3');
+        this.gameOverMusic = new Audio('sounds\\gameOver.mp3');
         this.backgroundMusic.loop = true;
         // dictionaries whose keys are the this.board.allPlayers id's. 
         this.scoreDisplay = {};
@@ -581,7 +583,8 @@ class Display {
         let eventsList = this.board.update();
         for (let e of eventsList) {
             if (e.type === events.collsion) {
-                console.log("collision!"); // in the future we will inform the user that his Snake got disqualified.
+                this.squishAudio.play();
+                // in the future we will inform the user that his Snake got disqualified.
             }
 
             else if (e.type === events.move) {
@@ -623,6 +626,8 @@ class Display {
     gameOver() {
         // stops background music
         this.gameStopped();
+        // starts game over music
+        setTimeout(() => { this.gameOverMusic.play(); }, 1000);
         // updates game header
         this.updateGameHeader('Game Over');
         // allows the user to save his results
@@ -631,11 +636,14 @@ class Display {
         window.localStorage.setItem('lastScore', Math.max(...this.board.allPlayers.map(p => p.score)));
     }
     /**
-     * stops and resets the background music.
+     * stops and resets the music.
      */
     gameStopped() {
-        this.backgroundMusic.pause();
-        this.backgroundMusic.currentTime = 0;
+        let music = [this.gameOverMusic, this.backgroundMusic];
+        music.forEach((e) => {
+            e.pause();
+            e.currentTime = 0;
+        });
     }
     /**
      * updates the game header and starts the background music.
